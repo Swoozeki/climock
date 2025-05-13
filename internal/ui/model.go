@@ -494,15 +494,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// togglePanel toggles between the features and endpoints panels
-func (m *Model) togglePanel() {
-	if m.activePanel == FeaturesPanel {
-		m.activePanel = EndpointsPanel
-	} else {
-		m.activePanel = FeaturesPanel
-	}
-}
-
 // toggleServer toggles the server on/off
 func (m *Model) toggleServer() tea.Msg {
 	if m.Server.IsRunning() {

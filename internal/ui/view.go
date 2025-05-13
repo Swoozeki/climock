@@ -57,17 +57,24 @@ func (m *Model) renderPanelTitles() string {
 	featuresTitleStyle := m.styles.featureTitle.Copy().Width(m.width/4)
 	endpointsTitleStyle := m.styles.endpointsTitle.Copy().Width(3*m.width/4)
 
-	// Apply bold styling based on active panel
+	// Apply enhanced styling for active panel
 	if m.activePanel == FeaturesPanel {
-		featuresTitleStyle = featuresTitleStyle.Bold(true)
+		featuresTitleStyle = featuresTitleStyle.
+			Bold(true).
+			Background(lipgloss.Color("63")).
+			Foreground(lipgloss.Color("255"))
+		featureTitle := featuresTitleStyle.Render("▶ Features ◀")
+		endpointsTitle := endpointsTitleStyle.Render(fmt.Sprintf("Endpoints (%s)", m.selectedFeature))
+		return lipgloss.JoinHorizontal(lipgloss.Top, featureTitle, endpointsTitle)
 	} else {
-		endpointsTitleStyle = endpointsTitleStyle.Bold(true)
+		endpointsTitleStyle = endpointsTitleStyle.
+			Bold(true).
+			Background(lipgloss.Color("63")).
+			Foreground(lipgloss.Color("255"))
+		featureTitle := featuresTitleStyle.Render("Features")
+		endpointsTitle := endpointsTitleStyle.Render(fmt.Sprintf("▶ Endpoints (%s) ◀", m.selectedFeature))
+		return lipgloss.JoinHorizontal(lipgloss.Top, featureTitle, endpointsTitle)
 	}
-
-	featureTitle := featuresTitleStyle.Render("Features")
-	endpointsTitle := endpointsTitleStyle.Render(fmt.Sprintf("Endpoints (%s)", m.selectedFeature))
-
-	return lipgloss.JoinHorizontal(lipgloss.Top, featureTitle, endpointsTitle)
 }
 
 // renderLists renders the feature and endpoint lists
@@ -103,31 +110,10 @@ func (m *Model) renderDialog() string {
 		return m.renderInputDialog() // Reuse input dialog renderer
 	default:
 		// If we somehow get here with NoDialog, render the main UI
-		return m.renderMainUI()
+		return m.View()
 	}
 }
 
-// renderMainUI renders the main UI (without dialogs)
-func (m *Model) renderMainUI() string {
-	var sb strings.Builder
-
-	// Header
-	sb.WriteString(m.renderHeader())
-	sb.WriteString("\n")
-
-	// Panel titles
-	sb.WriteString(m.renderPanelTitles())
-	sb.WriteString("\n")
-
-	// Lists
-	sb.WriteString(m.renderLists())
-	sb.WriteString("\n")
-
-	// Footer
-	sb.WriteString(m.renderFooter())
-
-	return sb.String()
-}
 
 // renderHelpDialog renders the help dialog
 func (m *Model) renderHelpDialog() string {
@@ -279,7 +265,3 @@ func (m *Model) renderConfirmDialog() string {
 	// Position the dialog in the center of the screen
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, dialog)
 }
-
-// We're now reusing renderInputDialog for ProxyConfigDialog, so this function is no longer needed
-
-// This function is no longer needed as we're using lipgloss.Place for centering
