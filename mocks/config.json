@@ -1,0 +1,17 @@
+{
+  "proxyConfig": {
+    "target": "https://api.real-server.com",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  },
+  "serverConfig": {
+    "port": 3000,
+    "host": "localhost"
+  },
+  "editor": {
+    "command": "code",
+    "args": ["-g", "{file}:{line}"]
+  }
+}

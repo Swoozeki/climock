@@ -1,0 +1,60 @@
+{
+  "feature": "products",
+  "endpoints": [
+    {
+      "id": "get-products",
+      "method": "GET",
+      "path": "/api/products",
+      "active": true,
+      "defaultResponse": "error",
+      "responses": {
+        "empty": {
+          "status": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "products": [],
+            "total": 0
+          },
+          "delay": 100
+        },
+        "error": {
+          "status": 500,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "code": "SERVER_ERROR",
+            "error": "Internal server error"
+          },
+          "delay": 100
+        },
+        "standard": {
+          "status": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "products": [
+              {
+                "category": "electronics",
+                "id": "prod-1",
+                "name": "Product 1",
+                "price": 19.99
+              },
+              {
+                "category": "clothing",
+                "id": "prod-2",
+                "name": "Product 2",
+                "price": 29.99
+              }
+            ],
+            "total": 2
+          },
+          "delay": 200
+        }
+      }
+    }
+  ]
+}

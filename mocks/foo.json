@@ -1,0 +1,24 @@
+{
+  "feature": "foo",
+  "endpoints": [
+    {
+      "id": "get-foo",
+      "method": "GET",
+      "path": "/foo",
+      "active": true,
+      "defaultResponse": "default",
+      "responses": {
+        "default": {
+          "status": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "message": "This is a default response"
+          },
+          "delay": 0
+        }
+      }
+    }
+  ]
+}
