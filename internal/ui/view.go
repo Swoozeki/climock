@@ -148,9 +148,9 @@ func (m *Model) renderHelpDialog() string {
 	// Content for the help dialog
 	helpContent := `
 Navigation:
-  Tab       - Switch between Features and Endpoints panels
-  ↑/↓       - Navigate up/down in the current panel
-  Enter     - Select a feature or endpoint
+	 ←/→       - Switch between Features and Endpoints panels
+	 ↑/↓       - Navigate up/down in the current panel
+	 Enter     - Select a feature or endpoint
 
 Actions:
   t         - Toggle endpoint active/inactive

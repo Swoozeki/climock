@@ -425,8 +425,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keyMap.Quit):
 			return m, tea.Quit
-		case key.Matches(msg, m.keyMap.Tab):
-			m.togglePanel()
+		case key.Matches(msg, m.keyMap.Left):
+			if m.activePanel == EndpointsPanel {
+				m.activePanel = FeaturesPanel
+			}
+		case key.Matches(msg, m.keyMap.Right):
+			if m.activePanel == FeaturesPanel {
+				m.activePanel = EndpointsPanel
+			}
 		case key.Matches(msg, m.keyMap.Help):
 			m.activeDialog = HelpDialog
 			// Initialize dialog content

@@ -6,7 +6,7 @@ This document provides a comprehensive reference for all keyboard shortcuts avai
 
 | Key     | Action       | Description                                  |
 | ------- | ------------ | -------------------------------------------- |
-| `Tab`   | Switch Panel | Switch between Features and Endpoints panels |
+| `←/→`   | Switch Panel | Switch between Features and Endpoints panels |
 | `↑`     | Move Up      | Move up in the current panel                 |
 | `↓`     | Move Down    | Move down in the current panel               |
 | `Enter` | Select       | Select a feature or endpoint                 |
@@ -53,14 +53,14 @@ This document provides a comprehensive reference for all keyboard shortcuts avai
 
 ### Quick Feature Creation
 
-1. Press `Tab` to ensure you're in the Features panel
+1. Press `←` to navigate to the Features panel
 2. Press `n` to create a new feature
 3. Enter the feature name and press `Enter`
 
 ### Quick Endpoint Creation
 
 1. Select a feature in the Features panel
-2. Press `Tab` to switch to the Endpoints panel
+2. Press `→` to switch to the Endpoints panel
 3. Press `n` to create a new endpoint
 4. Fill in the endpoint details and press `Enter`
 
@@ -113,7 +113,7 @@ When in a dialog:
 ### Creating a New Mock API
 
 1. Press `n` in the Features panel to create a new feature
-2. Press `Tab` to switch to the Endpoints panel
+2. Press `→` to switch to the Endpoints panel
 3. Press `n` to create a new endpoint
 4. Press `o` to open the configuration file and customize responses
 5. Press `s` to start the server and test your mock API
