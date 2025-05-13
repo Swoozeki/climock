@@ -37,10 +37,8 @@ func (m *Model) View() string {
 
 // renderHeader renders the header
 func (m *Model) renderHeader() string {
-	headerStyle := lipgloss.NewStyle().
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true).
-		Width(m.width)
+	// Use cached style with updated width
+	headerStyle := m.styles.header.Copy().Width(m.width)
 
 	serverStatus := "Stopped"
 	if m.Server.IsRunning() {
@@ -55,18 +53,11 @@ func (m *Model) renderHeader() string {
 
 // renderPanelTitles renders the panel titles
 func (m *Model) renderPanelTitles() string {
-	featuresTitleStyle := lipgloss.NewStyle().
-		Width(m.width/4).
-		Align(lipgloss.Left).
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true)
+	// Use cached styles with updated widths
+	featuresTitleStyle := m.styles.featureTitle.Copy().Width(m.width/4)
+	endpointsTitleStyle := m.styles.endpointsTitle.Copy().Width(3*m.width/4)
 
-	endpointsTitleStyle := lipgloss.NewStyle().
-		Width(3*m.width/4).
-		Align(lipgloss.Left).
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true)
-
+	// Apply bold styling based on active panel
 	if m.activePanel == FeaturesPanel {
 		featuresTitleStyle = featuresTitleStyle.Bold(true)
 	} else {
@@ -81,11 +72,9 @@ func (m *Model) renderPanelTitles() string {
 
 // renderLists renders the feature and endpoint lists
 func (m *Model) renderLists() string {
-	featuresStyle := lipgloss.NewStyle().
-		Width(m.width/4)
-
-	endpointsStyle := lipgloss.NewStyle().
-		Width(3*m.width/4)
+	// Use cached styles with updated widths
+	featuresStyle := m.styles.features.Copy().Width(m.width/4)
+	endpointsStyle := m.styles.endpoints.Copy().Width(3*m.width/4)
 
 	featuresView := featuresStyle.Render(m.featuresList.View())
 	endpointsView := endpointsStyle.Render(m.endpointsList.View())
@@ -95,10 +84,8 @@ func (m *Model) renderLists() string {
 
 // renderFooter renders the footer
 func (m *Model) renderFooter() string {
-	footerStyle := lipgloss.NewStyle().
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderTop(true).
-		Width(m.width)
+	// Use cached style with updated width
+	footerStyle := m.styles.footer.Copy().Width(m.width)
 
 	return footerStyle.Render(m.help.View(m.keyMap))
 }

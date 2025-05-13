@@ -11,8 +11,6 @@ import (
 
 // showNewFeatureDialog shows the new feature dialog
 func (m *Model) showNewFeatureDialog() {
-	fmt.Println("DEBUG: showNewFeatureDialog called")
-	
 	// Clear any existing dialog state
 	m.textInputs = nil
 	m.dialogConfirmFn = nil
@@ -22,8 +20,6 @@ func (m *Model) showNewFeatureDialog() {
 	m.activeDialog = NewFeatureDialog
 	m.dialogTitle = "Create New Feature"
 	m.dialogContent = ""
-	
-	fmt.Printf("DEBUG: Dialog state set - activeDialog: %v, title: %s\n", m.activeDialog, m.dialogTitle)
 	
 	// Create text input for feature name with consistent styling
 	ti := textinput.New()
@@ -39,20 +35,13 @@ func (m *Model) showNewFeatureDialog() {
 	
 	// Set the confirm function - this will be called when Enter is pressed
 	m.dialogConfirmFn = func() tea.Cmd {
-		fmt.Println("DEBUG: Feature dialog confirm function called")
-		
 		// Capture the feature name value now, before text inputs are cleared
 		var featureName string
 		if len(m.textInputs) > 0 {
 			featureName = m.textInputs[0].Value()
-			fmt.Printf("DEBUG: Feature name from text input: '%s'\n", featureName)
-		} else {
-			fmt.Println("DEBUG: No text inputs available!")
 		}
 		
 		return func() tea.Msg {
-			// Debug print to console
-			fmt.Printf("DEBUG: Creating new feature: '%s'\n", featureName)
 			
 			if featureName == "" {
 				fmt.Println("Error: feature name cannot be empty")
@@ -118,15 +107,10 @@ func (m *Model) showNewFeatureDialog() {
 
 // showNewEndpointDialog shows the new endpoint dialog
 func (m *Model) showNewEndpointDialog() {
-	fmt.Println("DEBUG: showNewEndpointDialog called")
-	
 	// Check if a feature is selected
 	if m.selectedFeature == "" {
-		fmt.Println("DEBUG: No feature selected, cannot create endpoint")
 		return
 	}
-	
-	fmt.Printf("DEBUG: Creating endpoint for feature: '%s'\n", m.selectedFeature)
 	
 	// Clear any existing dialog state
 	m.textInputs = nil
@@ -137,8 +121,6 @@ func (m *Model) showNewEndpointDialog() {
 	m.activeDialog = NewEndpointDialog
 	m.dialogTitle = "Create New Endpoint"
 	m.dialogContent = ""
-	
-	fmt.Printf("DEBUG: Endpoint dialog state set - activeDialog: %v, title: %s\n", m.activeDialog, m.dialogTitle)
 	
 	// Create text inputs with consistent width and styling
 	idInput := textinput.New()
@@ -379,18 +361,13 @@ func (m *Model) showProxyConfigDialog() {
 // createNewFeature creates a new feature
 func (m *Model) createNewFeature() func() tea.Msg {
 	return func() tea.Msg {
-		// Debug print
-		fmt.Println("createNewFeature called")
-		
 		// Safety check for text inputs
 		if len(m.textInputs) == 0 {
-			fmt.Println("Error: no text inputs available")
 			return fmt.Errorf("no text inputs available")
 		}
 		
 		// Get the feature name from the text input
 		featureName := strings.TrimSpace(m.textInputs[0].Value())
-		fmt.Printf("Feature name: '%s'\n", featureName)
 		
 		if featureName == "" {
 			fmt.Println("Error: feature name cannot be empty")
@@ -452,12 +429,8 @@ func (m *Model) createNewFeature() func() tea.Msg {
 // createNewEndpoint creates a new endpoint
 func (m *Model) createNewEndpoint() func() tea.Msg {
 	return func() tea.Msg {
-		// Debug print
-		fmt.Println("createNewEndpoint called")
-		
 		// Safety check for text inputs
 		if len(m.textInputs) < 3 {
-			fmt.Println("Error: not enough text inputs available")
 			return fmt.Errorf("not enough text inputs available")
 		}
 		
@@ -465,8 +438,6 @@ func (m *Model) createNewEndpoint() func() tea.Msg {
 		id := strings.TrimSpace(m.textInputs[0].Value())
 		method := strings.TrimSpace(m.textInputs[1].Value())
 		path := strings.TrimSpace(m.textInputs[2].Value())
-		
-		fmt.Printf("Endpoint details - ID: '%s', Method: '%s', Path: '%s'\n", id, method, path)
 		
 		// Validate inputs
 		if id == "" || method == "" || path == "" {
@@ -541,12 +512,9 @@ func (m *Model) createNewEndpoint() func() tea.Msg {
 		// Reload the server if it's running
 		if m.Server.IsRunning() {
 			if err := m.Server.Reload(); err != nil {
-				fmt.Printf("Error reloading server: %v\n", err)
 				return fmt.Errorf("failed to reload server: %v", err)
 			}
 		}
-		
-		fmt.Println("Endpoint creation completed successfully")
 		return nil
 	}
 }
@@ -555,19 +523,12 @@ func (m *Model) createNewEndpoint() func() tea.Msg {
 func (m *Model) deleteFeature() tea.Msg {
 	item, ok := m.featuresList.SelectedItem().(featureItem)
 	if !ok {
-		fmt.Println("Error: no feature selected")
 		return fmt.Errorf("no feature selected")
 	}
 	
-	fmt.Printf("Deleting feature: %s\n", item.name)
-	
 	if err := m.MockManager.DeleteFeature(item.name); err != nil {
-		errMsg := fmt.Sprintf("Failed to delete feature: %v", err)
-		fmt.Println(errMsg)
-		return fmt.Errorf(errMsg)
+		return fmt.Errorf("failed to delete feature: %w", err)
 	}
-	
-	fmt.Println("Feature deleted successfully, initializing features list")
 	m.initFeaturesList()
 	
 	// Select the first feature if available
@@ -584,12 +545,9 @@ func (m *Model) deleteFeature() tea.Msg {
 	
 	if m.Server.IsRunning() {
 		if err := m.Server.Reload(); err != nil {
-			fmt.Printf("Error reloading server: %v\n", err)
 			return fmt.Errorf("failed to reload server: %v", err)
 		}
 	}
-	
-	fmt.Println("Feature deletion completed successfully")
 	
 	// Return a custom message for smoother UI updates
 	return customUpdateMsg{
@@ -602,29 +560,19 @@ func (m *Model) deleteFeature() tea.Msg {
 func (m *Model) deleteEndpoint() tea.Msg {
 	item, ok := m.endpointsList.SelectedItem().(endpointItem)
 	if !ok {
-		fmt.Println("Error: no endpoint selected")
 		return fmt.Errorf("no endpoint selected")
 	}
 	
-	fmt.Printf("Deleting endpoint: %s\n", item.id)
-	
 	if err := m.MockManager.DeleteEndpoint(m.selectedFeature, item.id); err != nil {
-		errMsg := fmt.Sprintf("Failed to delete endpoint: %v", err)
-		fmt.Println(errMsg)
-		return fmt.Errorf(errMsg)
+		return fmt.Errorf("failed to delete endpoint: %w", err)
 	}
-	
-	fmt.Println("Endpoint deleted successfully, updating endpoints list")
 	m.updateEndpointsList()
 	
 	if m.Server.IsRunning() {
 		if err := m.Server.Reload(); err != nil {
-			fmt.Printf("Error reloading server: %v\n", err)
 			return fmt.Errorf("failed to reload server: %v", err)
 		}
 	}
-	
-	fmt.Println("Endpoint deletion completed successfully")
 	
 	// Return a custom message for smoother UI updates
 	return customUpdateMsg{
@@ -639,33 +587,26 @@ func (m *Model) updateProxyConfig() func() tea.Msg {
 	return func() tea.Msg {
 		// Safety check for text inputs
 		if len(m.textInputs) == 0 {
-			fmt.Println("Error: no text inputs available")
 			return fmt.Errorf("no text inputs available")
 		}
 		
 		// Get the target from the text input
 		target := strings.TrimSpace(m.textInputs[0].Value())
-		fmt.Printf("Proxy target: '%s'\n", target)
 		
 		if target == "" {
-			fmt.Println("Error: proxy target cannot be empty")
 			return fmt.Errorf("proxy target cannot be empty")
 		}
 		
 		// Validate URL format
 		if !strings.HasPrefix(target, "http://") && !strings.HasPrefix(target, "https://") {
-			fmt.Println("Error: proxy target must start with http:// or https://")
 			return fmt.Errorf("proxy target must start with http:// or https://")
 		}
 		
 		// Update the proxy target
 		if err := m.ProxyManager.UpdateTarget(target); err != nil {
-			errMsg := fmt.Sprintf("Failed to update proxy target: %v", err)
-			fmt.Println(errMsg)
-			return fmt.Errorf(errMsg)
+			return fmt.Errorf("failed to update proxy target: %w", err)
 		}
 		
-		fmt.Println("Proxy target updated successfully")
 		return nil
 	}
 }

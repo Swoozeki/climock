@@ -141,15 +141,11 @@ func (c *Config) loadFeatureConfig(path string) (FeatureConfig, error) {
 
 // SaveFeatureConfig saves a feature configuration to its file
 func (c *Config) SaveFeatureConfig(feature string) error {
-	fmt.Printf("DEBUG: Config: Saving feature '%s' to file\n", feature)
-	fmt.Printf("DEBUG: BaseDir: '%s'\n", c.BaseDir)
-	
 	c.mu.RLock()
 	featureConfig, ok := c.Mocks[feature]
 	c.mu.RUnlock()
 
 	if !ok {
-		fmt.Printf("DEBUG: Error: feature '%s' not found in config\n", feature)
 		return fmt.Errorf("feature %s not found", feature)
 	}
 
@@ -157,50 +153,31 @@ func (c *Config) SaveFeatureConfig(feature string) error {
 	defer c.mu.Unlock()
 
 	path := filepath.Join(c.BaseDir, feature+".json")
-	fmt.Printf("DEBUG: Saving to absolute path: '%s'\n", path)
-	
-	// Check if directory exists
-	dirInfo, err := os.Stat(c.BaseDir)
-	if err != nil {
-		fmt.Printf("DEBUG: Error checking base directory: %v\n", err)
-		if os.IsNotExist(err) {
-			fmt.Printf("DEBUG: Base directory '%s' does not exist\n", c.BaseDir)
-		}
-	} else {
-		fmt.Printf("DEBUG: Base directory exists: %v, isDir: %v\n", c.BaseDir, dirInfo.IsDir())
-	}
 	
 	// Ensure the directory exists
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		fmt.Printf("DEBUG: Error creating directory %s: %v\n", dir, err)
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 	
 	data, err := json.MarshalIndent(featureConfig, "", "  ")
 	if err != nil {
-		fmt.Printf("DEBUG: Error marshaling JSON: %v\n", err)
 		return err
 	}
-
-	fmt.Printf("DEBUG: Writing %d bytes to file\n", len(data))
 	
 	// Create a temporary file in the same directory
 	tempFile := path + ".tmp"
 	if err := os.WriteFile(tempFile, data, 0644); err != nil {
-		fmt.Printf("DEBUG: Error writing temporary file: %v\n", err)
 		return fmt.Errorf("failed to write temporary file: %w", err)
 	}
 	
 	// Rename the temporary file to the target file (atomic operation)
 	if err := os.Rename(tempFile, path); err != nil {
-		fmt.Printf("DEBUG: Error renaming temporary file: %v\n", err)
 		// Try to remove the temporary file
 		os.Remove(tempFile)
 		return fmt.Errorf("failed to rename temporary file: %w", err)
 	}
 	
-	fmt.Printf("DEBUG: File written successfully to '%s'\n", path)
 	return nil
 }
 

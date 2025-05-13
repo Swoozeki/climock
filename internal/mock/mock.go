@@ -196,21 +196,14 @@ func (m *Manager) CreateEndpoint(feature string, endpoint config.Endpoint) error
 
 // CreateFeature creates a new feature
 func (m *Manager) CreateFeature(feature config.FeatureConfig) error {
-	fmt.Printf("DEBUG: Mock Manager: Creating feature '%s'\n", feature.Feature)
-	fmt.Printf("DEBUG: Config BaseDir: '%s'\n", m.Config.BaseDir)
-	
 	if err := m.Config.AddFeature(feature); err != nil {
-		fmt.Printf("DEBUG: Error adding feature to config: %v\n", err)
 		return fmt.Errorf("failed to add feature to config: %w", err)
 	}
 
-	fmt.Printf("DEBUG: Feature added to in-memory config, saving to file...\n")
 	if err := m.Config.SaveFeatureConfig(feature.Feature); err != nil {
-		fmt.Printf("DEBUG: Error saving feature config: %v\n", err)
 		return fmt.Errorf("failed to save feature config: %w", err)
 	}
 	
-	fmt.Printf("DEBUG: Feature config saved successfully\n")
 	return nil
 }
 

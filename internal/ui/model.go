@@ -5,12 +5,14 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/mockoho/mockoho/internal/config"
 	"github.com/mockoho/mockoho/internal/mock"
 	"github.com/mockoho/mockoho/internal/proxy"
@@ -42,6 +44,17 @@ type Model struct {
 	dialogContent   string
 	dialogConfirmFn func() tea.Cmd
 	dialogCancelFn  func() tea.Cmd
+	
+	// Performance optimization
+	lastUpdate time.Time
+	styles     struct {
+		header         lipgloss.Style
+		featureTitle   lipgloss.Style
+		endpointsTitle lipgloss.Style
+		features       lipgloss.Style
+		endpoints      lipgloss.Style
+		footer         lipgloss.Style
+	}
 }
 
 // customUpdateMsg is a custom message type for smoother UI updates
@@ -49,6 +62,11 @@ type customUpdateMsg struct {
 	action string
 	name   string
 	id     string
+	// Additional fields for more specific updates
+	feature  string
+	endpoint string
+	active   bool
+	response string
 }
 
 // New creates a new UI model
@@ -75,8 +93,13 @@ func New(cfg *config.Config, mockManager *mock.Manager, proxyManager *proxy.Mana
 		dialogContent: "",
 		dialogConfirmFn: nil,
 		dialogCancelFn:  nil,
+		// Initialize performance optimization
+		lastUpdate: time.Now(),
 	}
 
+	// Initialize cached styles
+	m.initStyles()
+	
 	// Initialize feature list
 	m.initFeaturesList()
 	
@@ -89,6 +112,39 @@ func New(cfg *config.Config, mockManager *mock.Manager, proxyManager *proxy.Mana
 	m.help.Width = m.width
 
 	return m
+}
+
+// initStyles initializes cached styles for better performance
+func (m *Model) initStyles() {
+	// Header style
+	m.styles.header = lipgloss.NewStyle().
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderBottom(true)
+	
+	// Panel title styles
+	m.styles.featureTitle = lipgloss.NewStyle().
+		Width(m.width/4).
+		Align(lipgloss.Left).
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderBottom(true)
+	
+	m.styles.endpointsTitle = lipgloss.NewStyle().
+		Width(3*m.width/4).
+		Align(lipgloss.Left).
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderBottom(true)
+	
+	// List styles
+	m.styles.features = lipgloss.NewStyle().
+		Width(m.width/4)
+	
+	m.styles.endpoints = lipgloss.NewStyle().
+		Width(3*m.width/4)
+	
+	// Footer style
+	m.styles.footer = lipgloss.NewStyle().
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderTop(true)
 }
 
 // Init initializes the UI model
@@ -217,8 +273,43 @@ func (m *Model) updateEndpointsList() {
 	// Save current selection index
 	currentIndex := m.endpointsList.Index()
 	
-	// Update endpoints list
-	m.initEndpointsList()
+	// Create new items without recreating the entire list
+	items := []list.Item{}
+	
+	// Add endpoints from selected feature
+	if m.selectedFeature != "" {
+		if featureConfig, ok := m.Config.Mocks[m.selectedFeature]; ok {
+			for _, endpoint := range featureConfig.Endpoints {
+				// Get all response names and sort them alphabetically for consistent order
+				var allResponses []string
+				for name := range endpoint.Responses {
+					allResponses = append(allResponses, name)
+				}
+				
+				// Sort responses alphabetically
+				for i := 0; i < len(allResponses); i++ {
+					for j := i + 1; j < len(allResponses); j++ {
+						if allResponses[i] > allResponses[j] {
+							allResponses[i], allResponses[j] = allResponses[j], allResponses[i]
+						}
+					}
+				}
+				
+				items = append(items, endpointItem{
+					id:              endpoint.ID,
+					method:          endpoint.Method,
+					path:            endpoint.Path,
+					active:          endpoint.Active,
+					defaultResponse: endpoint.DefaultResponse,
+					responses:       allResponses,
+				})
+			}
+		}
+	}
+	
+	// Update just the items, not the entire list
+	m.endpointsList.SetItems(items)
+	m.endpointsList.Title = fmt.Sprintf("Endpoints (%s)", m.selectedFeature)
 	
 	// Restore selection if possible
 	if currentIndex < len(m.endpointsList.Items()) {
@@ -229,6 +320,22 @@ func (m *Model) updateEndpointsList() {
 // Update updates the UI model
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
+	
+	// Throttle updates to max 30fps (about 33ms between updates)
+	now := time.Now()
+	if now.Sub(m.lastUpdate) < 33*time.Millisecond {
+		// Skip non-essential updates if they come too quickly
+		switch msg.(type) {
+		case tea.WindowSizeMsg, tea.KeyMsg:
+			// Always process these immediately
+		default:
+			// Delay other updates
+			return m, tea.Tick(33*time.Millisecond-now.Sub(m.lastUpdate), func(t time.Time) tea.Msg {
+				return msg
+			})
+		}
+	}
+	m.lastUpdate = now
 
 	switch msg := msg.(type) {
 	case customUpdateMsg:
@@ -249,6 +356,45 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "endpoint_deleted":
 			// Endpoint was deleted, no need to force a full redraw
 			// The lists have already been updated in the dialog confirm function
+			
+		case "endpoint_updated":
+			// Update just the specific endpoint in the list
+			if msg.id != "" {
+				for i, item := range m.endpointsList.Items() {
+					if ei, ok := item.(endpointItem); ok && ei.id == msg.id {
+						// Update just this item
+						items := m.endpointsList.Items()
+						endpoint, _ := m.Config.GetEndpoint(m.selectedFeature, msg.id)
+						if endpoint != nil {
+							// Get all response names
+							var allResponses []string
+							for name := range endpoint.Responses {
+								allResponses = append(allResponses, name)
+							}
+							
+							// Sort responses alphabetically
+							for i := 0; i < len(allResponses); i++ {
+								for j := i + 1; j < len(allResponses); j++ {
+									if allResponses[i] > allResponses[j] {
+										allResponses[i], allResponses[j] = allResponses[j], allResponses[i]
+									}
+								}
+							}
+							
+							items[i] = endpointItem{
+								id:              endpoint.ID,
+								method:          endpoint.Method,
+								path:            endpoint.Path,
+								active:          endpoint.Active,
+								defaultResponse: endpoint.DefaultResponse,
+								responses:       allResponses,
+							}
+							m.endpointsList.SetItems(items)
+						}
+						break
+					}
+				}
+			}
 		}
 		
 	case tea.WindowSizeMsg:
@@ -266,8 +412,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		
 		m.help.Width = m.width
 		
-		// Force redraw of lists
-		cmds = append(cmds, func() tea.Msg { return nil })
+		// Update cached styles with new dimensions
+		m.initStyles()
 		
 	case tea.KeyMsg:
 		// Handle dialog-specific key presses
@@ -288,17 +434,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.dialogContent = ""
 			return m, nil
 		case key.Matches(msg, m.keyMap.New):
-			fmt.Println("DEBUG: 'n' key pressed - New item action triggered")
-			fmt.Printf("DEBUG: Active panel: %v, Selected feature: '%s'\n", m.activePanel, m.selectedFeature)
-			
 			if m.activePanel == FeaturesPanel {
-				fmt.Println("DEBUG: Showing new feature dialog")
 				m.showNewFeatureDialog()
 			} else if len(m.selectedFeature) > 0 {
-				fmt.Println("DEBUG: Showing new endpoint dialog")
 				m.showNewEndpointDialog()
 			} else {
-				fmt.Println("DEBUG: Can't create endpoint without a selected feature")
 				// Can't create endpoint without a selected feature
 				return m, nil
 			}
@@ -406,18 +546,17 @@ func (m *Model) toggleEndpoint() tea.Cmd {
 			return err
 		}
 		
-		m.updateEndpointsList()
-		
 		if m.Server.IsRunning() {
 			if err := m.Server.Reload(); err != nil {
 				return err
 			}
 		}
 		
-		// Force a UI refresh by returning a window size message
-		return tea.WindowSizeMsg{
-			Width:  m.width,
-			Height: m.height,
+		// Return a custom update message instead of forcing a full redraw
+		return customUpdateMsg{
+			action:  "endpoint_updated",
+			id:      item.id,
+			feature: m.selectedFeature,
 		}
 	}
 }
@@ -470,18 +609,18 @@ func (m *Model) cycleResponse() tea.Cmd {
 			return err
 		}
 		
-		m.updateEndpointsList()
-		
 		if m.Server.IsRunning() {
 			if err := m.Server.Reload(); err != nil {
 				return err
 			}
 		}
 		
-		// Force a UI refresh by returning a window size message
-		return tea.WindowSizeMsg{
-			Width:  m.width,
-			Height: m.height,
+		// Return a custom update message instead of forcing a full redraw
+		return customUpdateMsg{
+			action:   "endpoint_updated",
+			id:       item.id,
+			feature:  m.selectedFeature,
+			response: nextResponse,
 		}
 	}
 }
