@@ -116,11 +116,11 @@ func New(cfg *config.Config, mockManager *mock.Manager, proxyManager *proxy.Mana
 
 // initStyles initializes cached styles for better performance
 func (m *Model) initStyles() {
-	// Header style
+	// Header style - removed bottom border
 	m.styles.header = lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("63")).
-		BorderBottom(true).
+		BorderBottom(false). // No bottom border
 		Padding(1, 2)
 	
 	// Panel title styles
@@ -149,16 +149,19 @@ func (m *Model) initStyles() {
 		Width(3*m.width/4).
 		Padding(0, 1)
 	
-	// Footer style
+	// Footer style - removed top border
 	m.styles.footer = lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("63")).
-		BorderTop(true).
+		BorderTop(false). // No top border
 		Padding(0, 2)
 }
 
 // Init initializes the UI model
 func (m *Model) Init() tea.Cmd {
+	// Initialize list delegates based on active panel
+	m.updateListDelegatesForActivePanel()
+	
 	// Return commands to initialize the terminal and UI
 	return tea.Batch(
 		// Enter alt screen without clearing first (reduces flicker)
@@ -199,7 +202,24 @@ func (m *Model) Init() tea.Cmd {
 
 // initFeaturesList initializes the features list
 func (m *Model) initFeaturesList() {
+	// Create a compact delegate
 	delegate := list.NewDefaultDelegate()
+	
+	// Create a custom style for the delegate
+	styles := delegate.Styles
+	styles.NormalTitle = styles.NormalTitle.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	styles.SelectedTitle = styles.SelectedTitle.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	
+	// Create a new delegate with the custom styles
+	compactDelegate := list.NewDefaultDelegate()
+	compactDelegate.Styles = styles
+	compactDelegate.ShowDescription = false // Hide description to save space
 	
 	items := []list.Item{}
 	
@@ -217,11 +237,14 @@ func (m *Model) initFeaturesList() {
 	// Adjust width to account for borders
 	featureWidth := m.width/4 - 2
 	
-	m.featuresList = list.New(items, delegate, featureWidth, listHeight)
+	m.featuresList = list.New(items, compactDelegate, featureWidth, listHeight)
 	m.featuresList.Title = "Features"
 	m.featuresList.SetShowStatusBar(false)
 	m.featuresList.SetFilteringEnabled(false)
 	m.featuresList.SetShowHelp(false)
+	
+	// Update delegates based on active panel
+	m.updateListDelegatesForActivePanel()
 	
 	// Select the first feature if available
 	if len(items) > 0 {
@@ -237,7 +260,31 @@ func (m *Model) initFeaturesList() {
 
 // initEndpointsList initializes the endpoints list
 func (m *Model) initEndpointsList() {
+	// Create a compact delegate
 	delegate := list.NewDefaultDelegate()
+	
+	// Create a custom style for the delegate
+	styles := delegate.Styles
+	styles.NormalTitle = styles.NormalTitle.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	styles.NormalDesc = styles.NormalDesc.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	styles.SelectedTitle = styles.SelectedTitle.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	styles.SelectedDesc = styles.SelectedDesc.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	
+	// Create a new delegate with the custom styles
+	compactDelegate := list.NewDefaultDelegate()
+	compactDelegate.Styles = styles
 	
 	items := []list.Item{}
 	
@@ -281,7 +328,7 @@ func (m *Model) initEndpointsList() {
 	// Adjust width to account for borders
 	endpointWidth := 3*m.width/4 - 2
 	
-	m.endpointsList = list.New(items, delegate, endpointWidth, listHeight)
+	m.endpointsList = list.New(items, compactDelegate, endpointWidth, listHeight)
 	m.endpointsList.Title = fmt.Sprintf("Endpoints (%s)", m.selectedFeature)
 	m.endpointsList.SetShowStatusBar(false)
 	m.endpointsList.SetFilteringEnabled(false)
@@ -335,6 +382,81 @@ func (m *Model) updateEndpointsList() {
 	if currentIndex < len(m.endpointsList.Items()) {
 		m.endpointsList.Select(currentIndex)
 	}
+	
+	// Update delegates based on active panel
+	m.updateListDelegatesForActivePanel()
+}
+
+// updateListDelegatesForActivePanel updates the list delegates based on the active panel
+func (m *Model) updateListDelegatesForActivePanel() {
+	// Create delegates with appropriate styles based on active panel
+	featuresDelegate := list.NewDefaultDelegate()
+	endpointsDelegate := list.NewDefaultDelegate()
+	
+	// Base styles for both delegates
+	featuresStyles := featuresDelegate.Styles
+	endpointsStyles := endpointsDelegate.Styles
+	
+	// Make both compact
+	featuresStyles.NormalTitle = featuresStyles.NormalTitle.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	featuresStyles.NormalDesc = featuresStyles.NormalDesc.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	
+	endpointsStyles.NormalTitle = endpointsStyles.NormalTitle.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	endpointsStyles.NormalDesc = endpointsStyles.NormalDesc.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	
+	// If features panel is active, use normal selection styles
+	if m.activePanel == FeaturesPanel {
+		// Keep features selection visible
+		featuresStyles.SelectedTitle = featuresStyles.SelectedTitle.Copy().
+			UnsetMargins().
+			PaddingTop(0).
+			PaddingBottom(0)
+		featuresStyles.SelectedDesc = featuresStyles.SelectedDesc.Copy().
+			UnsetMargins().
+			PaddingTop(0).
+			PaddingBottom(0)
+		
+		// Make endpoints selection less visible (same as normal)
+		endpointsStyles.SelectedTitle = endpointsStyles.NormalTitle.Copy()
+		endpointsStyles.SelectedDesc = endpointsStyles.NormalDesc.Copy()
+	} else {
+		// Make features selection less visible (same as normal)
+		featuresStyles.SelectedTitle = featuresStyles.NormalTitle.Copy()
+		featuresStyles.SelectedDesc = featuresStyles.NormalDesc.Copy()
+		
+		// Keep endpoints selection visible
+		endpointsStyles.SelectedTitle = endpointsStyles.SelectedTitle.Copy().
+			UnsetMargins().
+			PaddingTop(0).
+			PaddingBottom(0)
+		endpointsStyles.SelectedDesc = endpointsStyles.SelectedDesc.Copy().
+			UnsetMargins().
+			PaddingTop(0).
+			PaddingBottom(0)
+	}
+	
+	// Apply the styles to the delegates
+	featuresDelegate.Styles = featuresStyles
+	endpointsDelegate.Styles = endpointsStyles
+	
+	// Hide description for features to save space
+	featuresDelegate.ShowDescription = false
+	
+	// Update the lists with the new delegates
+	m.featuresList.SetDelegate(featuresDelegate)
+	m.endpointsList.SetDelegate(endpointsDelegate)
 }
 
 // Update updates the UI model
@@ -376,6 +498,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "endpoint_deleted":
 			// Endpoint was deleted, no need to force a full redraw
 			// The lists have already been updated in the dialog confirm function
+			
+		case "server_toggled":
+			// Server was started or stopped, force a UI update
+			// No additional action needed as the message itself triggers the update
 			
 		case "endpoint_updated":
 			// Update just the specific endpoint in the list
@@ -452,10 +578,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Left):
 			if m.activePanel == EndpointsPanel {
 				m.activePanel = FeaturesPanel
+				m.updateListDelegatesForActivePanel()
 			}
 		case key.Matches(msg, m.keyMap.Right):
 			if m.activePanel == FeaturesPanel {
 				m.activePanel = EndpointsPanel
+				m.updateListDelegatesForActivePanel()
 			}
 		case key.Matches(msg, m.keyMap.Help):
 			m.activeDialog = HelpDialog
@@ -480,7 +608,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.showProxyConfigDialog()
 			return m, nil
 		case key.Matches(msg, m.keyMap.Server):
-			return m, m.toggleServer
+			return m, m.toggleServer()
 		case key.Matches(msg, m.keyMap.Reload):
 			return m, m.reloadConfig
 		case key.Matches(msg, m.keyMap.Toggle):
@@ -519,17 +647,21 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // toggleServer toggles the server on/off
-func (m *Model) toggleServer() tea.Msg {
-	if m.Server.IsRunning() {
-		if err := m.Server.Stop(); err != nil {
-			return fmt.Errorf("failed to stop server: %v", err)
+func (m *Model) toggleServer() tea.Cmd {
+	return func() tea.Msg {
+		if m.Server.IsRunning() {
+			if err := m.Server.Stop(); err != nil {
+				return fmt.Errorf("failed to stop server: %v", err)
+			}
+			// Return a custom update message to trigger UI refresh
+			return customUpdateMsg{action: "server_toggled", active: false}
+		} else {
+			if err := m.Server.Start(); err != nil {
+				return fmt.Errorf("failed to start server: %v", err)
+			}
+			// Return a custom update message to trigger UI refresh
+			return customUpdateMsg{action: "server_toggled", active: true}
 		}
-		return nil
-	} else {
-		if err := m.Server.Start(); err != nil {
-			return fmt.Errorf("failed to start server: %v", err)
-		}
-		return nil
 	}
 }
 
@@ -667,12 +799,8 @@ func (m *Model) openInEditor() tea.Msg {
 		
 		filePath = fmt.Sprintf("%s/%s.json", m.Config.BaseDir, m.selectedFeature)
 		
-		// Find the line number of the endpoint
-		// This is a simple approximation
-		line = 10 // Default line number
-		
-		// We could use endpoint.id to find the actual line number in the file
-		_ = endpoint.id // Use the variable to avoid unused variable error
+		// Find the actual line number of the endpoint in the file
+		line = findEndpointLineNumber(filePath, endpoint.id)
 	}
 	
 	// Check if file exists
@@ -686,14 +814,17 @@ func (m *Model) openInEditor() tea.Msg {
 		return fmt.Errorf("editor command not configured")
 	}
 	
-	args := make([]string, len(m.Config.Global.Editor.Args))
-	copy(args, m.Config.Global.Editor.Args)
+	// Create a new slice for args to avoid modifying the original
+	args := make([]string, 0, len(m.Config.Global.Editor.Args))
 	
 	// Replace placeholders in args
-	for i, arg := range args {
-		args[i] = strings.ReplaceAll(arg, "{file}", filePath)
-		args[i] = strings.ReplaceAll(arg, "{line}", fmt.Sprintf("%d", line))
+	for _, arg := range m.Config.Global.Editor.Args {
+		newArg := strings.ReplaceAll(arg, "{file}", filePath)
+		newArg = strings.ReplaceAll(newArg, "{line}", fmt.Sprintf("%d", line))
+		args = append(args, newArg)
 	}
+	
+	// Execute the editor command
 	
 	// Execute the editor command
 	cmd := exec.Command(command, args...)
@@ -707,6 +838,90 @@ func (m *Model) openInEditor() tea.Msg {
 	
 	// Don't wait for the editor to close
 	return nil
+}
+
+// findEndpointLineNumber finds the line number of an endpoint in a JSON file
+func findEndpointLineNumber(filePath, endpointID string) int {
+	// Default line number if we can't find the exact position
+	defaultLine := 1
+	
+	// Read the file
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return defaultLine
+	}
+	
+	// Convert to string for line-by-line processing
+	content := string(data)
+	lines := strings.Split(content, "\n")
+	
+	// First, find the endpoints array
+	endpointsStartLine := -1
+	for i, line := range lines {
+		if strings.Contains(line, `"endpoints":`) {
+			endpointsStartLine = i
+			break
+		}
+	}
+	
+	if endpointsStartLine == -1 {
+		return defaultLine
+	}
+	
+	// Now search for the endpoint with the matching ID
+	inEndpoint := false
+	endpointStartLine := -1
+	idLine := -1
+	pathLine := -1
+	
+	for i := endpointsStartLine; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+		
+		// Start of an endpoint object
+		if line == "{" && !inEndpoint {
+			inEndpoint = true
+			endpointStartLine = i
+			continue
+		}
+		
+		// End of an endpoint object
+		if line == "}" && inEndpoint {
+			// If we found the ID but not the path, reset and continue
+			if idLine > 0 && pathLine == -1 {
+				inEndpoint = false
+				endpointStartLine = -1
+				idLine = -1
+				continue
+			}
+			
+			// If we found both ID and path, we're done
+			if idLine > 0 && pathLine > 0 {
+				return pathLine + 1 // Return the path line (1-based)
+			}
+		}
+		
+		// Look for the ID field
+		if inEndpoint && strings.Contains(line, `"id":`) && strings.Contains(line, `"`+endpointID+`"`) {
+			idLine = i
+		}
+		
+		// Look for the path field if we've already found the ID
+		if inEndpoint && idLine > 0 && strings.Contains(line, `"path":`) {
+			pathLine = i
+		}
+	}
+	
+	// If we found the ID but not the path, return the ID line
+	if idLine > 0 {
+		return idLine + 1
+	}
+	
+	// If we found the endpoint start but not the ID or path, return the endpoint start line
+	if endpointStartLine > 0 {
+		return endpointStartLine + 1
+	}
+	
+	return defaultLine
 }
 
 // updateDialog updates the active dialog
@@ -794,7 +1009,6 @@ func (m *Model) updateDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			// If no input is focused, focus the first one
 			if focusedIndex == -1 {
 				m.textInputs[0].Focus()
-				fmt.Println("No input focused, focusing first input")
 				return m, nil
 			}
 			
@@ -804,9 +1018,8 @@ func (m *Model) updateDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			// Focus the next input (or wrap around to the first)
 			nextIndex := (focusedIndex + 1) % len(m.textInputs)
 			m.textInputs[nextIndex].Focus()
+			// Focus moved to next input
 			
-			fmt.Printf("Tab pressed: Moving focus from input %d to input %d\n",
-				focusedIndex, nextIndex)
 			
 			return m, nil
 		}
@@ -827,7 +1040,6 @@ func (m *Model) updateDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			if focusedIndex == -1 {
 				lastIndex := len(m.textInputs) - 1
 				m.textInputs[lastIndex].Focus()
-				fmt.Println("No input focused, focusing last input")
 				return m, nil
 			}
 			
@@ -838,8 +1050,7 @@ func (m *Model) updateDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			prevIndex := (focusedIndex - 1 + len(m.textInputs)) % len(m.textInputs)
 			m.textInputs[prevIndex].Focus()
 			
-			fmt.Printf("Shift+Tab pressed: Moving focus from input %d to input %d\n",
-				focusedIndex, prevIndex)
+			// Focus moved to previous input
 			
 			return m, nil
 		}
@@ -867,7 +1078,6 @@ func (m *Model) updateDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			// If no input is focused, focus the first one
 			if !focusedFound && len(m.textInputs) > 0 {
 				m.textInputs[0].Focus()
-				fmt.Println("No input focused after update, focusing first input")
 			}
 			
 			return m, tea.Batch(cmds...)

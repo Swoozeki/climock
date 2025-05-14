@@ -65,13 +65,13 @@ func (i endpointItem) Description() string {
 	var responses []string
 	for _, r := range i.responses {
 		if r == i.defaultResponse {
-			// Make default response more obvious with ★ symbol and bold style
-			defaultStyle := lipgloss.NewStyle().Bold(true)
-			responses = append(responses, defaultStyle.Render("★"+r))
+			// Make default response more obvious with * symbol
+			responses = append(responses, "*"+r)
 		} else {
 			responses = append(responses, r)
 		}
 	}
 	
-	return fmt.Sprintf("[%s]", strings.Join(responses, " | "))
+	// Make the description more compact
+	return fmt.Sprintf("[%s]", strings.Join(responses, "|"))
 }

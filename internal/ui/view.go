@@ -33,8 +33,10 @@ func (m *Model) View() string {
 
 // renderHeader renders the header
 func (m *Model) renderHeader() string {
-	// Use cached style with updated width
-	headerStyle := m.styles.header.Copy().Width(m.width)
+	// Use cached style with updated width but without bottom border
+	headerStyle := m.styles.header.Copy().
+		Width(m.width).
+		BorderBottom(false) // Remove the bottom border
 
 	// Title style similar to dialog titles
 	titleStyle := lipgloss.NewStyle().
@@ -93,18 +95,48 @@ func (m *Model) renderLists() string {
 
 // renderFooter renders the footer
 func (m *Model) renderFooter() string {
-	// Use cached style with updated width
-	footerStyle := m.styles.footer.Copy().Width(m.width)
+	// Use cached style with updated width but without top border
+	footerStyle := m.styles.footer.Copy().
+		Width(m.width).
+		BorderTop(false) // Remove the top border
 
 	// Style for the footer content
 	footerContentStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("240"))
 
 	// Create a panel-specific keymap that only shows relevant shortcuts
-	// This makes the footer more compact by only showing shortcuts for the active panel
 	panelKeyMap := NewPanelKeyMap(m.keyMap, m.activePanel)
 	
-	return footerStyle.Render(footerContentStyle.Render(m.help.View(panelKeyMap)))
+	// Get shortcuts in two rows for consistent height
+	shortcutRows := panelKeyMap.ShortHelpInRows()
+	
+	// Render each row of shortcuts
+	var sb strings.Builder
+	
+	// First row
+	for i, binding := range shortcutRows[0] {
+		if i > 0 {
+			sb.WriteString("  ")
+		}
+		sb.WriteString(binding.Help().Key)
+		sb.WriteString(" ")
+		sb.WriteString(binding.Help().Desc)
+	}
+	
+	// Add a newline between rows
+	sb.WriteString("\n")
+	
+	// Second row
+	for i, binding := range shortcutRows[1] {
+		if i > 0 {
+			sb.WriteString("  ")
+		}
+		sb.WriteString(binding.Help().Key)
+		sb.WriteString(" ")
+		sb.WriteString(binding.Help().Desc)
+	}
+	
+	return footerStyle.Render(footerContentStyle.Render(sb.String()))
 }
 
 // renderDialog renders the active dialog
@@ -127,44 +159,74 @@ func (m *Model) renderDialog() string {
 
 // renderHelpDialog renders the help dialog
 func (m *Model) renderHelpDialog() string {
-	// Create a box for the dialog
+	// Create a box for the dialog - make it even narrower
 	box := lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("63")).
-		Padding(1, 2).
-		Width(m.width - 20).
-		Align(lipgloss.Center)
+		Padding(1, 1).
+		Width(m.width - 60)
 
 	// Style for the title
 	titleStyle := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(lipgloss.Color("205")).
-		MarginBottom(1)
+		Foreground(lipgloss.Color("205"))
 
-	// Content for the help dialog
-	helpContent := `
-Navigation:
-	 ←/→       - Switch between Features and Endpoints panels
-	 ↑/↓       - Navigate up/down in the current panel
-	 Enter     - Select a feature or endpoint
+	// Style for section headers
+	sectionStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("111"))
 
-Actions:
-  t         - Toggle endpoint active/inactive
-  r         - Cycle through available responses (sets as default)
-  o         - Open configuration file in default editor
-  n         - Create new endpoint or feature
-  d         - Delete selected endpoint or feature
-  p         - Change proxy target
-  s         - Start/stop server
-  q         - Quit application
-  h         - Show this help screen
-  /         - Search for endpoints
-  Ctrl+r    - Reload configurations from disk
+	// Key style
+	keyStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("63"))
 
-Press Esc or any key to return...`
+	// Create a grid layout for maximum compactness
+	navSection := sectionStyle.Render("Navigation:")
+	
+	// Navigation keys in a compact grid
+	navKeys := fmt.Sprintf(
+		"%s Switch panels  %s Move up/down  %s Select",
+		keyStyle.Render("←/→"), keyStyle.Render("↑/↓"), keyStyle.Render("Enter"))
 
-	// Combine title and content
-	content := titleStyle.Render("Mockoho Help") + helpContent
+	// Actions in a compact grid with 3 columns
+	actionsSection := sectionStyle.Render("Actions:")
+	
+	// First row of actions
+	actionsRow1 := fmt.Sprintf(
+		"%s Toggle endpoint  %s Cycle responses  %s Open config",
+		keyStyle.Render("t"), keyStyle.Render("r"), keyStyle.Render("o"))
+	
+	// Second row of actions
+	actionsRow2 := fmt.Sprintf(
+		"%s New item        %s Delete item     %s Proxy target",
+		keyStyle.Render("n"), keyStyle.Render("d"), keyStyle.Render("p"))
+	
+	// Third row of actions
+	actionsRow3 := fmt.Sprintf(
+		"%s Start/stop      %s Quit           %s Help screen",
+		keyStyle.Render("s"), keyStyle.Render("q"), keyStyle.Render("h"))
+	
+	// Fourth row of actions - removed search (/) since it doesn't work
+	actionsRow4 := fmt.Sprintf(
+		"%s Reload configs",
+		keyStyle.Render("Ctrl+r"))
+
+	// Footer text
+	footerStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("240")).
+		Align(lipgloss.Center)
+	footer := footerStyle.Render("Press Esc to return")
+
+	// Combine title and content with minimal spacing
+	content := titleStyle.Render("Mockoho Help") + "\n" +
+		navSection + "\n" +
+		navKeys + "\n\n" +
+		actionsSection + "\n" +
+		actionsRow1 + "\n" +
+		actionsRow2 + "\n" +
+		actionsRow3 + "\n" +
+		actionsRow4 + "\n\n" +
+		footer
 
 	// Create the dialog box
 	dialog := box.Render(content)

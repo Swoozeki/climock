@@ -54,16 +54,12 @@ func (m *Model) showNewFeatureDialog() {
 				Endpoints: []config.Endpoint{},
 			}
 			
-			fmt.Printf("Creating feature: %+v\n", feature)
-			
 			// Create the feature using the mock manager
 			if err := m.MockManager.CreateFeature(feature); err != nil {
 				errMsg := fmt.Sprintf("Failed to create feature: %v", err)
 				fmt.Println(errMsg)
 				return fmt.Errorf(errMsg)
 			}
-			
-			fmt.Println("Feature created successfully, initializing features list")
 			
 			// Update the features list
 			m.initFeaturesList()
@@ -87,8 +83,6 @@ func (m *Model) showNewFeatureDialog() {
 				}
 			}
 			
-			fmt.Println("Feature creation completed successfully")
-			
 			// Return a custom message for smoother UI updates
 			return customUpdateMsg{
 				action: "feature_created",
@@ -99,7 +93,6 @@ func (m *Model) showNewFeatureDialog() {
 	
 	m.dialogCancelFn = func() tea.Cmd {
 		return func() tea.Msg {
-			fmt.Println("Feature creation cancelled")
 			return nil
 		}
 	}
@@ -153,8 +146,7 @@ func (m *Model) showNewEndpointDialog() {
 		}
 		
 		return func() tea.Msg {
-			// Debug print to console
-			fmt.Printf("Creating new endpoint: %s %s %s\n", id, method, path)
+			// Process endpoint creation
 			
 			// Validate inputs
 			if id == "" || method == "" || path == "" {
@@ -180,7 +172,6 @@ func (m *Model) showNewEndpointDialog() {
 			// Validate path (must start with /)
 			if !strings.HasPrefix(path, "/") {
 				path = "/" + path
-				fmt.Printf("Added leading slash to path: %s\n", path)
 			}
 			
 			// Create a basic endpoint with a default response
@@ -204,16 +195,12 @@ func (m *Model) showNewEndpointDialog() {
 				},
 			}
 			
-			fmt.Printf("Creating endpoint in feature '%s': %+v\n", m.selectedFeature, endpoint)
-			
 			// Create the endpoint using the mock manager
 			if err := m.MockManager.CreateEndpoint(m.selectedFeature, endpoint); err != nil {
 				errMsg := fmt.Sprintf("Failed to create endpoint: %v", err)
 				fmt.Println(errMsg)
 				return fmt.Errorf(errMsg)
 			}
-			
-			fmt.Println("Endpoint created successfully, updating endpoints list")
 			
 			// Update the endpoints list
 			m.updateEndpointsList()
@@ -234,8 +221,6 @@ func (m *Model) showNewEndpointDialog() {
 				}
 			}
 			
-			fmt.Println("Endpoint creation completed successfully")
-			
 			// Return a custom message for smoother UI updates
 			return customUpdateMsg{
 				action: "endpoint_created",
@@ -247,7 +232,6 @@ func (m *Model) showNewEndpointDialog() {
 	
 	m.dialogCancelFn = func() tea.Cmd {
 		return func() tea.Msg {
-			fmt.Println("Endpoint creation cancelled")
 			return nil
 		}
 	}

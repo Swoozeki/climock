@@ -13,6 +13,11 @@ import (
 	"github.com/mockoho/mockoho/internal/proxy"
 )
 
+func init() {
+	// Set Gin to release mode to disable debug logging
+	gin.SetMode(gin.ReleaseMode)
+}
+
 // Server represents the mock server
 type Server struct {
 	Config      *config.Config
@@ -25,7 +30,10 @@ type Server struct {
 
 // New creates a new server
 func New(cfg *config.Config, mockManager *mock.Manager, proxyManager *proxy.Manager) *Server {
-	router := gin.Default()
+	// Use gin.New() instead of gin.Default() to avoid debug logging
+	router := gin.New()
+	// Add only the recovery middleware
+	router.Use(gin.Recovery())
 	
 	return &Server{
 		Config:      cfg,
@@ -93,7 +101,9 @@ func (s *Server) GetAddress() string {
 // setupRoutes sets up the server routes
 func (s *Server) setupRoutes() {
 	// Clear existing routes
-	s.router = gin.Default()
+	s.router = gin.New()
+	// Add only the recovery middleware
+	s.router.Use(gin.Recovery())
 
 	// Add a catch-all route to handle all requests
 	s.router.Any("/*path", s.handleRequest)
