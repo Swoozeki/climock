@@ -1,12 +1,16 @@
 package ui
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mockoho/mockoho/internal/config"
+	"github.com/mockoho/mockoho/internal/logger"
 )
 
 // showNewFeatureDialog shows the new feature dialog
@@ -322,21 +326,85 @@ func (m *Model) showProxyConfigDialog() {
 	
 	m.textInputs = []textinput.Model{targetInput}
 	
+	// Store the target input for use in the confirm function
 	m.dialogConfirmFn = func() tea.Cmd {
+		// Capture the target value immediately, before the text inputs are cleared
+		var target string
+		if len(m.textInputs) > 0 {
+			target = strings.TrimSpace(m.textInputs[0].Value())
+		}
+		
+		// Return a function that will be executed after the dialog is closed
 		return func() tea.Msg {
-			// Safety check for text inputs
-			if len(m.textInputs) == 0 {
-				fmt.Println("Error: text inputs array is empty")
-				return fmt.Errorf("text inputs array is empty")
+			// Safety check for target value
+			if target == "" {
+				logger.Error("Proxy target cannot be empty")
+				return fmt.Errorf("proxy target cannot be empty")
 			}
 			
-			return m.updateProxyConfig()()
+			// Validate URL format
+			if !strings.HasPrefix(target, "http://") && !strings.HasPrefix(target, "https://") {
+				logger.Error("Proxy target must start with http:// or https://")
+				return fmt.Errorf("proxy target must start with http:// or https://")
+			}
+			
+			logger.Info("Updating proxy target to: %s", target)
+			
+			// Update the in-memory configuration
+			m.Config.Global.ProxyConfig.Target = target
+			
+			// Direct file update
+			configPath := filepath.Join(m.Config.BaseDir, "config.json")
+			logger.Info("Directly writing to config file: %s", configPath)
+			
+			// Read the current file content
+			data, err := os.ReadFile(configPath)
+			if err != nil {
+				logger.Error("Failed to read config file: %v", err)
+				return fmt.Errorf("failed to read config file: %v", err)
+			}
+			
+			// Parse the JSON
+			var configData map[string]interface{}
+			if err := json.Unmarshal(data, &configData); err != nil {
+				logger.Error("Failed to parse config file: %v", err)
+				return fmt.Errorf("failed to parse config file: %v", err)
+			}
+			
+			// Update the proxy target
+			proxyConfig, ok := configData["proxyConfig"].(map[string]interface{})
+			if !ok {
+				proxyConfig = make(map[string]interface{})
+				configData["proxyConfig"] = proxyConfig
+			}
+			proxyConfig["target"] = target
+			
+			// Write the updated config back to the file
+			updatedData, err := json.MarshalIndent(configData, "", "  ")
+			if err != nil {
+				logger.Error("Failed to marshal config data: %v", err)
+				return fmt.Errorf("failed to marshal config data: %v", err)
+			}
+			
+			if err := os.WriteFile(configPath, updatedData, 0644); err != nil {
+				logger.Error("Failed to write config file: %v", err)
+				return fmt.Errorf("failed to write config file: %v", err)
+			}
+			
+			// Update the proxy manager
+			if err := m.ProxyManager.UpdateTarget(target); err != nil {
+				logger.Error("Failed to update proxy manager: %v", err)
+				// We've already updated the file, so just log the error
+			}
+			
+			logger.Info("Proxy target updated successfully to: %s", target)
+			return nil
 		}
 	}
 	
 	m.dialogCancelFn = func() tea.Cmd {
 		return func() tea.Msg {
-			fmt.Println("Proxy configuration cancelled")
+			logger.Info("Proxy configuration cancelled")
 			return nil
 		}
 	}
@@ -403,34 +471,5 @@ func (m *Model) deleteEndpoint() tea.Msg {
 		action: "endpoint_deleted",
 		name:   m.selectedFeature,
 		id:     item.id,
-	}
-}
-
-// updateProxyConfig updates the proxy configuration
-func (m *Model) updateProxyConfig() func() tea.Msg {
-	return func() tea.Msg {
-		// Safety check for text inputs
-		if len(m.textInputs) == 0 {
-			return fmt.Errorf("no text inputs available")
-		}
-		
-		// Get the target from the text input
-		target := strings.TrimSpace(m.textInputs[0].Value())
-		
-		if target == "" {
-			return fmt.Errorf("proxy target cannot be empty")
-		}
-		
-		// Validate URL format
-		if !strings.HasPrefix(target, "http://") && !strings.HasPrefix(target, "https://") {
-			return fmt.Errorf("proxy target must start with http:// or https://")
-		}
-		
-		// Update the proxy target
-		if err := m.ProxyManager.UpdateTarget(target); err != nil {
-			return fmt.Errorf("failed to update proxy target: %w", err)
-		}
-		
-		return nil
 	}
 }

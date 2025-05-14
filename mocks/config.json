@@ -12,6 +12,9 @@
   },
   "editor": {
     "command": "code",
-    "args": ["-g", "{file}:{line}"]
+    "args": [
+      "-g",
+      "{file}:{line}"
+    ]
   }
 }

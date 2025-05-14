@@ -97,12 +97,16 @@ func (r *responseRecorder) WriteHeader(statusCode int) {
 
 // UpdateTarget updates the proxy target
 func (m *Manager) UpdateTarget(target string) error {
+	logger.Info("Updating proxy target to: %s", target)
+	
 	targetURL, err := url.Parse(target)
 	if err != nil {
+		logger.Error("Failed to parse target URL: %v", err)
 		return err
 	}
 
 	m.Config.Global.ProxyConfig.Target = target
+	logger.Info("Set proxy target in config: %s", target)
 	
 	// Create a new proxy with the updated target
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
@@ -138,8 +142,17 @@ func (m *Manager) UpdateTarget(target string) error {
 	}
 
 	m.proxy = proxy
+	logger.Info("Created new proxy with target: %s", target)
 	
-	return m.Config.SaveGlobalConfig()
+	logger.Info("Saving global config...")
+	err = m.Config.SaveGlobalConfig()
+	if err != nil {
+		logger.Error("Failed to save global config: %v", err)
+		return err
+	}
+	logger.Info("Global config saved successfully")
+	
+	return nil
 }
 
 // UpdatePathRewrite updates the path rewrite rules
