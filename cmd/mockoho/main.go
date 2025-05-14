@@ -17,7 +17,7 @@ import (
 
 var (
 	// Version is the version of the application
-	Version = "0.1.0"
+	Version = "1.0.0"
 	
 	// ConfigDir is the directory containing mock configurations
 	ConfigDir string

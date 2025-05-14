@@ -6,7 +6,7 @@
       "method": "GET",
       "path": "/credit/1.0/underwriting/transactioninstalment/user",
       "active": true,
-      "defaultResponse": "404",
+      "defaultResponse": "eligible",
       "responses": {
         "404": {
           "status": 404,

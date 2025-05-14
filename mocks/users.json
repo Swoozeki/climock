@@ -5,7 +5,7 @@
       "id": "get-user-profile",
       "method": "GET",
       "path": "/api/users/:id",
-      "active": true,
+      "active": false,
       "defaultResponse": "standard",
       "responses": {
         "error": {

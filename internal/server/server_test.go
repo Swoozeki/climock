@@ -7,10 +7,16 @@ import (
 	"testing"
 
 	"github.com/mockoho/mockoho/internal/config"
+	"github.com/mockoho/mockoho/internal/logger"
 	"github.com/mockoho/mockoho/internal/mock"
 	"github.com/mockoho/mockoho/internal/proxy"
 	"github.com/mockoho/mockoho/internal/server"
 )
+
+func init() {
+	// Initialize test logger to prevent nil pointer dereferences
+	logger.InitTestLogger()
+}
 
 // setupTestServer creates a test server with mock endpoints
 func setupTestServer(t *testing.T) (*server.Server, *httptest.Server) {
@@ -24,10 +30,12 @@ func setupTestServer(t *testing.T) (*server.Server, *httptest.Server) {
 	realServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{
+		if err := json.NewEncoder(w).Encode(map[string]string{
 			"source": "real-server",
 			"path":   r.URL.Path,
-		})
+		}); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		}
 	}))
 
 	// Update config to use the real server as proxy target
@@ -125,7 +133,11 @@ func createTestConfig() *config.Config {
 func TestActiveEndpoint(t *testing.T) {
 	// Set up test server
 	srv, realServer := setupTestServer(t)
-	defer srv.Stop()
+	defer func() {
+		if err := srv.Stop(); err != nil {
+			t.Logf("Error stopping server: %v", err)
+		}
+	}()
 	defer realServer.Close()
 
 	// Create a test request to the active endpoint
@@ -163,7 +175,11 @@ func TestActiveEndpoint(t *testing.T) {
 func TestInactiveEndpoint(t *testing.T) {
 	// Set up test server
 	srv, realServer := setupTestServer(t)
-	defer srv.Stop()
+	defer func() {
+		if err := srv.Stop(); err != nil {
+			t.Logf("Error stopping server: %v", err)
+		}
+	}()
 	defer realServer.Close()
 
 	// Create a test request to the inactive endpoint
@@ -201,7 +217,11 @@ func TestInactiveEndpoint(t *testing.T) {
 func TestNonConfiguredEndpoint(t *testing.T) {
 	// Set up test server
 	srv, realServer := setupTestServer(t)
-	defer srv.Stop()
+	defer func() {
+		if err := srv.Stop(); err != nil {
+			t.Logf("Error stopping server: %v", err)
+		}
+	}()
 	defer realServer.Close()
 
 	// Create a test request to a non-configured endpoint
@@ -294,10 +314,12 @@ func TestPathParameters(t *testing.T) {
 	realServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{
+		if err := json.NewEncoder(w).Encode(map[string]string{
 			"source": "real-server",
 			"path":   r.URL.Path,
-		})
+		}); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		}
 	}))
 	defer realServer.Close()
 

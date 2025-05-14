@@ -34,9 +34,7 @@ func (m *Model) View() string {
 // renderHeader renders the header
 func (m *Model) renderHeader() string {
 	// Use cached style with updated width but without bottom border
-	headerStyle := m.styles.header.Copy().
-		Width(m.width).
-		BorderBottom(false) // Remove the bottom border
+	headerStyle := m.styles.header.Width(m.width).BorderBottom(false)
 
 	// Title style similar to dialog titles
 	titleStyle := lipgloss.NewStyle().
@@ -62,8 +60,8 @@ func (m *Model) renderLists() string {
 	endpointWidth := 3*m.width/4 - 2
 	
 	// Use cached styles with adjusted widths
-	featuresStyle := m.styles.features.Copy().Width(featureWidth)
-	endpointsStyle := m.styles.endpoints.Copy().Width(endpointWidth)
+	featuresStyle := m.styles.features.Width(featureWidth)
+	endpointsStyle := m.styles.endpoints.Width(endpointWidth)
 
 	// Apply border styling to both panels consistently
 	// Use a highlighted border for the active panel
@@ -96,9 +94,7 @@ func (m *Model) renderLists() string {
 // renderFooter renders the footer
 func (m *Model) renderFooter() string {
 	// Use cached style with updated width but without top border
-	footerStyle := m.styles.footer.Copy().
-		Width(m.width).
-		BorderTop(false) // Remove the top border
+	footerStyle := m.styles.footer.Width(m.width).BorderTop(false)
 
 	// Style for the footer content
 	footerContentStyle := lipgloss.NewStyle().

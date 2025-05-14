@@ -12,11 +12,19 @@ Mockoho is a powerful mock server system designed to facilitate frontend develop
 
 ## Installation
 
-### Prerequisites
+### Option 1: Download Binary (Recommended)
 
-- Go 1.18 or higher
+1. Download the latest release for your platform from [GitHub Releases](https://github.com/mockoho/mockoho/releases)
+2. Extract the archive
+3. Move the binary to a location in your PATH (optional)
 
-### Building from Source
+### Option 2: Using Go Install (Requires Go)
+
+```bash
+go install github.com/mockoho/mockoho@latest
+```
+
+### Option 3: Building from Source
 
 ```bash
 # Clone the repository
@@ -27,12 +35,32 @@ cd mockoho
 go build -o mockoho ./cmd/mockoho
 ```
 
+## Usage
+
+Run Mockoho with default configuration:
+
+```bash
+mockoho
+```
+
+Specify a custom configuration directory:
+
+```bash
+mockoho --config /path/to/your/mocks
+```
+
+Run in server-only mode (without TUI):
+
+```bash
+mockoho server --config /path/to/your/mocks
+```
+
 ## Quick Start
 
 1. Run the Mockoho CLI tool:
 
 ```bash
-./mockoho
+mockoho
 ```
 
 2. Use the keyboard shortcuts to navigate and manage mock configurations:

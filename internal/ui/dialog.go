@@ -59,7 +59,7 @@ func (m *Model) showNewFeatureDialog() {
 			if err := m.MockManager.CreateFeature(feature); err != nil {
 				errMsg := fmt.Sprintf("Failed to create feature: %v", err)
 				fmt.Println(errMsg)
-				return fmt.Errorf(errMsg)
+				return fmt.Errorf("Failed to create feature: %v", err)
 			}
 			
 			// Update the features list
@@ -200,7 +200,7 @@ func (m *Model) showNewEndpointDialog() {
 			if err := m.MockManager.CreateEndpoint(m.selectedFeature, endpoint); err != nil {
 				errMsg := fmt.Sprintf("Failed to create endpoint: %v", err)
 				fmt.Println(errMsg)
-				return fmt.Errorf(errMsg)
+				return fmt.Errorf("Failed to create endpoint: %v", err)
 			}
 			
 			// Update the endpoints list

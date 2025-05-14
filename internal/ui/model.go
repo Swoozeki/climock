@@ -66,7 +66,6 @@ type customUpdateMsg struct {
 	id     string
 	// Additional fields for more specific updates
 	feature  string
-	endpoint string
 	active   bool
 	response string
 }
@@ -208,22 +207,17 @@ func (m *Model) createCompactDelegate(showDescription bool) list.DefaultDelegate
 	
 	// Create a custom style for the delegate
 	styles := delegate.Styles
-	styles.NormalTitle = styles.NormalTitle.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	styles.NormalDesc = styles.NormalDesc.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	styles.SelectedTitle = styles.SelectedTitle.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	styles.SelectedDesc = styles.SelectedDesc.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
+	normalTitle := styles.NormalTitle.UnsetMargins().PaddingTop(0).PaddingBottom(0)
+	styles.NormalTitle = normalTitle
+	
+	normalDesc := styles.NormalDesc.UnsetMargins().PaddingTop(0).PaddingBottom(0)
+	styles.NormalDesc = normalDesc
+	
+	selectedTitle := styles.SelectedTitle.UnsetMargins().PaddingTop(0).PaddingBottom(0)
+	styles.SelectedTitle = selectedTitle
+	
+	selectedDesc := styles.SelectedDesc.UnsetMargins().PaddingTop(0).PaddingBottom(0)
+	styles.SelectedDesc = selectedDesc
 	
 	// Create a new delegate with the custom styles
 	compactDelegate := list.NewDefaultDelegate()
@@ -274,11 +268,8 @@ func (m *Model) initFeaturesList() {
 	}
 }
 
-// initEndpointsList initializes the endpoints list
-func (m *Model) initEndpointsList() {
-	// Create a compact delegate with description
-	compactDelegate := m.createCompactDelegate(true)
-	
+// createEndpointItems creates endpoint items for the list
+func (m *Model) createEndpointItems() []list.Item {
 	items := []list.Item{}
 	
 	// Add endpoints from selected feature
@@ -306,6 +297,17 @@ func (m *Model) initEndpointsList() {
 		}
 	}
 	
+	return items
+}
+
+// initEndpointsList initializes the endpoints list
+func (m *Model) initEndpointsList() {
+	// Create a compact delegate with description
+	compactDelegate := m.createCompactDelegate(true)
+	
+	// Get endpoint items
+	items := m.createEndpointItems()
+	
 	// Create the list with proper dimensions
 	listHeight := m.height - 6 // Account for header and footer
 	if listHeight < 1 {
@@ -327,33 +329,8 @@ func (m *Model) updateEndpointsList() {
 	// Save current selection index
 	currentIndex := m.endpointsList.Index()
 	
-	// Create new items without recreating the entire list
-	items := []list.Item{}
-	
-	// Add endpoints from selected feature
-	if m.selectedFeature != "" {
-		if featureConfig, ok := m.Config.Mocks[m.selectedFeature]; ok {
-			for _, endpoint := range featureConfig.Endpoints {
-				// Get all response names and sort them alphabetically for consistent order
-				var allResponses []string
-				for name := range endpoint.Responses {
-					allResponses = append(allResponses, name)
-				}
-				
-				// Use Go's built-in sort package
-				sort.Strings(allResponses)
-				
-				items = append(items, endpointItem{
-					id:              endpoint.ID,
-					method:          endpoint.Method,
-					path:            endpoint.Path,
-					active:          endpoint.Active,
-					defaultResponse: endpoint.DefaultResponse,
-					responses:       allResponses,
-				})
-			}
-		}
-	}
+	// Get endpoint items using the shared function
+	items := m.createEndpointItems()
 	
 	// Update just the items, not the entire list
 	m.endpointsList.SetItems(items)
@@ -372,10 +349,7 @@ func (m *Model) updateEndpointsList() {
 func (m *Model) updateListDelegatesForActivePanel() {
 	// Create compact style function to reduce duplication
 	makeCompactStyle := func(style lipgloss.Style) lipgloss.Style {
-		return style.Copy().
-			UnsetMargins().
-			PaddingTop(0).
-			PaddingBottom(0)
+		return style.UnsetMargins().PaddingTop(0).PaddingBottom(0)
 	}
 
 	// Create delegates with appropriate styles based on active panel
@@ -395,12 +369,12 @@ func (m *Model) updateListDelegatesForActivePanel() {
 		featuresDelegate.Styles.SelectedDesc = makeCompactStyle(featuresDelegate.Styles.SelectedDesc)
 		
 		// Make endpoints selection less visible (same as normal)
-		endpointsDelegate.Styles.SelectedTitle = endpointsDelegate.Styles.NormalTitle.Copy()
-		endpointsDelegate.Styles.SelectedDesc = endpointsDelegate.Styles.NormalDesc.Copy()
+		endpointsDelegate.Styles.SelectedTitle = endpointsDelegate.Styles.NormalTitle
+		endpointsDelegate.Styles.SelectedDesc = endpointsDelegate.Styles.NormalDesc
 	} else {
 		// Make features selection less visible (same as normal)
-		featuresDelegate.Styles.SelectedTitle = featuresDelegate.Styles.NormalTitle.Copy()
-		featuresDelegate.Styles.SelectedDesc = featuresDelegate.Styles.NormalDesc.Copy()
+		featuresDelegate.Styles.SelectedTitle = featuresDelegate.Styles.NormalTitle
+		featuresDelegate.Styles.SelectedDesc = featuresDelegate.Styles.NormalDesc
 		
 		// Keep endpoints selection visible
 		endpointsDelegate.Styles.SelectedTitle = makeCompactStyle(endpointsDelegate.Styles.SelectedTitle)
@@ -474,14 +448,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 								allResponses = append(allResponses, name)
 							}
 							
-							// Sort responses alphabetically
-							for i := 0; i < len(allResponses); i++ {
-								for j := i + 1; j < len(allResponses); j++ {
-									if allResponses[i] > allResponses[j] {
-										allResponses[i], allResponses[j] = allResponses[j], allResponses[i]
-									}
-								}
-							}
+							// Sort responses alphabetically using Go's built-in sort package
+							sort.Strings(allResponses)
 							
 							items[i] = endpointItem{
 								id:              endpoint.ID,

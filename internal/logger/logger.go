@@ -2,10 +2,12 @@ package logger
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -77,8 +79,14 @@ func Init(debug bool) error {
 	// Initialize the logger with the custom writer
 	Logger = log.New(writer, "", 0)
 	
-	// Add a simple blank line as session separator
-	Logger.Println("\n")
+	// Add a clear session separator with timestamp
+	timestamp := time.Now().Format("2006-01-02 15:04:05")
+	divider := strings.Repeat("=", 50)
+	separator := fmt.Sprintf("\n\n%s\n%s\n%s\n\n",
+		divider,
+		fmt.Sprintf("=== NEW SESSION STARTED AT %s ===", timestamp),
+		divider)
+	Logger.Println(separator)
 
 	// Log initialization
 	Info("Logger initialized, debug mode: %v", debug)
@@ -116,7 +124,10 @@ func trimLogFile(filePath string, maxSize int64) {
 	}
 	
 	// Write the trimmed content back to the file
-	os.WriteFile(filePath, content, 0644)
+	if err := os.WriteFile(filePath, content, 0644); err != nil {
+		// We can't use Error() here as it would cause a recursive call
+		fmt.Printf("Failed to write trimmed log file: %v\n", err)
+	}
 }
 
 // Close logs a shutdown message
@@ -153,34 +164,46 @@ func formatMessage(level, format string, args ...interface{}) string {
 
 // LogDebug logs a debug message
 func LogDebug(format string, args ...interface{}) {
-	if IsDebugMode {
+	if IsDebugMode && Logger != nil {
 		Logger.Println(formatMessage("DEBUG", format, args...))
 	}
 }
 
 // Info logs an info message
 func Info(format string, args ...interface{}) {
-	Logger.Println(formatMessage("INFO", format, args...))
+	if Logger != nil {
+		Logger.Println(formatMessage("INFO", format, args...))
+	}
 }
 
 // Warn logs a warning message
 func Warn(format string, args ...interface{}) {
-	Logger.Println(formatMessage("WARN", format, args...))
+	if Logger != nil {
+		Logger.Println(formatMessage("WARN", format, args...))
+	}
 }
 
 // Error logs an error message
 func Error(format string, args ...interface{}) {
-	Logger.Println(formatMessage("ERROR", format, args...))
+	if Logger != nil {
+		Logger.Println(formatMessage("ERROR", format, args...))
+	}
 }
 
 // Fatal logs a fatal message and exits
 func Fatal(format string, args ...interface{}) {
-	Logger.Println(formatMessage("FATAL", format, args...))
+	if Logger != nil {
+		Logger.Println(formatMessage("FATAL", format, args...))
+	}
 	os.Exit(1)
 }
 
 // HTTPRequest logs an HTTP request
 func HTTPRequest(method, path, ip string, statusCode int, duration time.Duration) {
+	if Logger == nil {
+		return
+	}
+	
 	level := "INFO"
 	if statusCode >= 400 {
 		level = "WARN"
@@ -194,5 +217,14 @@ func HTTPRequest(method, path, ip string, statusCode int, duration time.Duration
 
 // ProxyError logs a proxy error
 func ProxyError(target string, err error) {
-	Logger.Println(formatMessage("ERROR", "Proxy error to %s: %v", target, err))
+	if Logger != nil {
+		Logger.Println(formatMessage("ERROR", "Proxy error to %s: %v", target, err))
+	}
+}
+
+// InitTestLogger initializes a logger for testing that doesn't write to any file
+func InitTestLogger() {
+	// Create a logger that writes to nowhere
+	Logger = log.New(io.Discard, "", 0)
+	IsDebugMode = false
 }
