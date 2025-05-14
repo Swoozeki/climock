@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -201,9 +202,8 @@ func (m *Model) Init() tea.Cmd {
 	)
 }
 
-// initFeaturesList initializes the features list
-func (m *Model) initFeaturesList() {
-	// Create a compact delegate
+// createCompactDelegate creates a compact list delegate with optimized styles
+func (m *Model) createCompactDelegate(showDescription bool) list.DefaultDelegate {
 	delegate := list.NewDefaultDelegate()
 	
 	// Create a custom style for the delegate
@@ -212,7 +212,15 @@ func (m *Model) initFeaturesList() {
 		UnsetMargins().
 		PaddingTop(0).
 		PaddingBottom(0)
+	styles.NormalDesc = styles.NormalDesc.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
 	styles.SelectedTitle = styles.SelectedTitle.Copy().
+		UnsetMargins().
+		PaddingTop(0).
+		PaddingBottom(0)
+	styles.SelectedDesc = styles.SelectedDesc.Copy().
 		UnsetMargins().
 		PaddingTop(0).
 		PaddingBottom(0)
@@ -220,7 +228,14 @@ func (m *Model) initFeaturesList() {
 	// Create a new delegate with the custom styles
 	compactDelegate := list.NewDefaultDelegate()
 	compactDelegate.Styles = styles
-	compactDelegate.ShowDescription = false // Hide description to save space
+	compactDelegate.ShowDescription = showDescription
+	
+	return compactDelegate
+}
+// initFeaturesList initializes the features list
+func (m *Model) initFeaturesList() {
+	// Create a compact delegate with no description
+	compactDelegate := m.createCompactDelegate(false)
 	
 	items := []list.Item{}
 	
@@ -261,31 +276,8 @@ func (m *Model) initFeaturesList() {
 
 // initEndpointsList initializes the endpoints list
 func (m *Model) initEndpointsList() {
-	// Create a compact delegate
-	delegate := list.NewDefaultDelegate()
-	
-	// Create a custom style for the delegate
-	styles := delegate.Styles
-	styles.NormalTitle = styles.NormalTitle.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	styles.NormalDesc = styles.NormalDesc.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	styles.SelectedTitle = styles.SelectedTitle.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	styles.SelectedDesc = styles.SelectedDesc.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	
-	// Create a new delegate with the custom styles
-	compactDelegate := list.NewDefaultDelegate()
-	compactDelegate.Styles = styles
+	// Create a compact delegate with description
+	compactDelegate := m.createCompactDelegate(true)
 	
 	items := []list.Item{}
 	
@@ -299,14 +291,8 @@ func (m *Model) initEndpointsList() {
 					allResponses = append(allResponses, name)
 				}
 				
-				// Sort responses alphabetically
-				for i := 0; i < len(allResponses); i++ {
-					for j := i + 1; j < len(allResponses); j++ {
-						if allResponses[i] > allResponses[j] {
-							allResponses[i], allResponses[j] = allResponses[j], allResponses[i]
-						}
-					}
-				}
+				// Sort responses alphabetically using Go's built-in sort package
+				sort.Strings(allResponses)
 				
 				items = append(items, endpointItem{
 					id:              endpoint.ID,
@@ -354,14 +340,8 @@ func (m *Model) updateEndpointsList() {
 					allResponses = append(allResponses, name)
 				}
 				
-				// Sort responses alphabetically
-				for i := 0; i < len(allResponses); i++ {
-					for j := i + 1; j < len(allResponses); j++ {
-						if allResponses[i] > allResponses[j] {
-							allResponses[i], allResponses[j] = allResponses[j], allResponses[i]
-						}
-					}
-				}
+				// Use Go's built-in sort package
+				sort.Strings(allResponses)
 				
 				items = append(items, endpointItem{
 					id:              endpoint.ID,
@@ -390,67 +370,42 @@ func (m *Model) updateEndpointsList() {
 
 // updateListDelegatesForActivePanel updates the list delegates based on the active panel
 func (m *Model) updateListDelegatesForActivePanel() {
-	// Create delegates with appropriate styles based on active panel
-	featuresDelegate := list.NewDefaultDelegate()
-	endpointsDelegate := list.NewDefaultDelegate()
-	
-	// Base styles for both delegates
-	featuresStyles := featuresDelegate.Styles
-	endpointsStyles := endpointsDelegate.Styles
-	
-	// Make both compact
-	featuresStyles.NormalTitle = featuresStyles.NormalTitle.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	featuresStyles.NormalDesc = featuresStyles.NormalDesc.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	
-	endpointsStyles.NormalTitle = endpointsStyles.NormalTitle.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	endpointsStyles.NormalDesc = endpointsStyles.NormalDesc.Copy().
-		UnsetMargins().
-		PaddingTop(0).
-		PaddingBottom(0)
-	
-	// If features panel is active, use normal selection styles
-	if m.activePanel == FeaturesPanel {
-		// Keep features selection visible
-		featuresStyles.SelectedTitle = featuresStyles.SelectedTitle.Copy().
-			UnsetMargins().
-			PaddingTop(0).
-			PaddingBottom(0)
-		featuresStyles.SelectedDesc = featuresStyles.SelectedDesc.Copy().
-			UnsetMargins().
-			PaddingTop(0).
-			PaddingBottom(0)
-		
-		// Make endpoints selection less visible (same as normal)
-		endpointsStyles.SelectedTitle = endpointsStyles.NormalTitle.Copy()
-		endpointsStyles.SelectedDesc = endpointsStyles.NormalDesc.Copy()
-	} else {
-		// Make features selection less visible (same as normal)
-		featuresStyles.SelectedTitle = featuresStyles.NormalTitle.Copy()
-		featuresStyles.SelectedDesc = featuresStyles.NormalDesc.Copy()
-		
-		// Keep endpoints selection visible
-		endpointsStyles.SelectedTitle = endpointsStyles.SelectedTitle.Copy().
-			UnsetMargins().
-			PaddingTop(0).
-			PaddingBottom(0)
-		endpointsStyles.SelectedDesc = endpointsStyles.SelectedDesc.Copy().
+	// Create compact style function to reduce duplication
+	makeCompactStyle := func(style lipgloss.Style) lipgloss.Style {
+		return style.Copy().
 			UnsetMargins().
 			PaddingTop(0).
 			PaddingBottom(0)
 	}
+
+	// Create delegates with appropriate styles based on active panel
+	featuresDelegate := list.NewDefaultDelegate()
+	endpointsDelegate := list.NewDefaultDelegate()
 	
-	// Apply the styles to the delegates
-	featuresDelegate.Styles = featuresStyles
-	endpointsDelegate.Styles = endpointsStyles
+	// Make both delegates compact
+	featuresDelegate.Styles.NormalTitle = makeCompactStyle(featuresDelegate.Styles.NormalTitle)
+	featuresDelegate.Styles.NormalDesc = makeCompactStyle(featuresDelegate.Styles.NormalDesc)
+	endpointsDelegate.Styles.NormalTitle = makeCompactStyle(endpointsDelegate.Styles.NormalTitle)
+	endpointsDelegate.Styles.NormalDesc = makeCompactStyle(endpointsDelegate.Styles.NormalDesc)
+	
+	// Set selection styles based on active panel
+	if m.activePanel == FeaturesPanel {
+		// Keep features selection visible
+		featuresDelegate.Styles.SelectedTitle = makeCompactStyle(featuresDelegate.Styles.SelectedTitle)
+		featuresDelegate.Styles.SelectedDesc = makeCompactStyle(featuresDelegate.Styles.SelectedDesc)
+		
+		// Make endpoints selection less visible (same as normal)
+		endpointsDelegate.Styles.SelectedTitle = endpointsDelegate.Styles.NormalTitle.Copy()
+		endpointsDelegate.Styles.SelectedDesc = endpointsDelegate.Styles.NormalDesc.Copy()
+	} else {
+		// Make features selection less visible (same as normal)
+		featuresDelegate.Styles.SelectedTitle = featuresDelegate.Styles.NormalTitle.Copy()
+		featuresDelegate.Styles.SelectedDesc = featuresDelegate.Styles.NormalDesc.Copy()
+		
+		// Keep endpoints selection visible
+		endpointsDelegate.Styles.SelectedTitle = makeCompactStyle(endpointsDelegate.Styles.SelectedTitle)
+		endpointsDelegate.Styles.SelectedDesc = makeCompactStyle(endpointsDelegate.Styles.SelectedDesc)
+	}
 	
 	// Hide description for features to save space
 	featuresDelegate.ShowDescription = false

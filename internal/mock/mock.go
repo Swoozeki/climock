@@ -40,20 +40,6 @@ func (m *Manager) FindEndpoint(method, path string) (*config.Endpoint, string, e
 
 // pathMatches checks if a request path matches an endpoint path pattern
 func (m *Manager) pathMatches(pattern, path string) bool {
-	// Convert pattern to regex
-	parts := strings.Split(pattern, "/")
-	regexParts := make([]string, len(parts))
-
-	for i, part := range parts {
-		if strings.HasPrefix(part, ":") {
-			// This is a parameter
-			regexParts[i] = "[^/]+"
-		} else {
-			regexParts[i] = part
-		}
-	}
-
-	// Simple path matching for now
 	patternParts := strings.Split(pattern, "/")
 	pathParts := strings.Split(path, "/")
 
@@ -112,11 +98,15 @@ func (m *Manager) GenerateResponse(endpoint *config.Endpoint, params map[string]
 
 // processResponseBody processes template variables in the response body
 func (m *Manager) processResponseBody(response *config.Response, params map[string]string) error {
+	// Skip processing if body is nil
+	if response.Body == nil {
+		return nil
+	}
+
 	// Convert body to JSON string
 	bodyJSON, err := json.Marshal(response.Body)
 	if err != nil {
-		logger.Error("Failed to marshal response body: %v", err)
-		return err
+		return fmt.Errorf("failed to marshal response body: %w", err)
 	}
 
 	// Create template data
@@ -128,21 +118,18 @@ func (m *Manager) processResponseBody(response *config.Response, params map[stri
 	// Process template
 	tmpl, err := template.New("body").Parse(string(bodyJSON))
 	if err != nil {
-		logger.Error("Failed to parse response template: %v", err)
-		return err
+		return fmt.Errorf("failed to parse response template: %w", err)
 	}
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
-		logger.Error("Failed to execute response template: %v", err)
-		return err
+		return fmt.Errorf("failed to execute response template: %w", err)
 	}
 
 	// Parse the processed JSON back into the response body
 	var processedBody interface{}
 	if err := json.Unmarshal(buf.Bytes(), &processedBody); err != nil {
-		logger.Error("Failed to unmarshal processed response: %v", err)
-		return err
+		return fmt.Errorf("failed to unmarshal processed response: %w", err)
 	}
 
 	response.Body = processedBody

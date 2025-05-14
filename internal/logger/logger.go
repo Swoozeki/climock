@@ -2,7 +2,6 @@ package logger
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,70 +35,26 @@ const (
 // Init initializes the logger
 func Init(debug bool) error {
 	IsDebugMode = debug
-	
-	// Create the log file if it doesn't exist
-	if _, err := os.Stat("debug.log"); os.IsNotExist(err) {
-		if err := os.WriteFile("debug.log", []byte(""), 0644); err != nil {
-			return fmt.Errorf("failed to create log file: %w", err)
-		}
-	}
-	
-	// Open the log file for reading and writing
+
+	// Open the log file for appending
 	var err error
-	File, err = os.OpenFile("debug.log", os.O_RDWR, 0644)
+	File, err = os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open log file: %w", err)
 	}
-	
-	// Initialize the logger with a custom writer that prepends logs
-	Logger = log.New(&prependWriter{file: File}, "", 0)
-	
+
+	// Initialize the logger
+	Logger = log.New(File, "", 0)
+
 	// Add a line break to separate sessions
 	if _, err := File.WriteString("\n\n"); err != nil {
 		return fmt.Errorf("failed to write session separator: %w", err)
 	}
-	
+
 	// Log initialization
 	Info("Logger initialized, debug mode: %v", debug)
-	
+
 	return nil
-}
-
-// prependWriter is a custom io.Writer that prepends new log entries to the file
-type prependWriter struct {
-	file *os.File
-}
-
-// Write implements io.Writer by prepending the content to the file
-func (w *prependWriter) Write(p []byte) (n int, err error) {
-	// Read the current content
-	w.file.Seek(0, 0)
-	content, err := io.ReadAll(w.file)
-	if err != nil {
-		return 0, err
-	}
-	
-	// Truncate the file
-	if err := w.file.Truncate(0); err != nil {
-		return 0, err
-	}
-	
-	// Move to the beginning
-	w.file.Seek(0, 0)
-	
-	// Write the new content followed by the old content
-	if _, err := w.file.Write(p); err != nil {
-		return 0, err
-	}
-	
-	// Only write the old content if it's not empty
-	if len(content) > 0 {
-		if _, err := w.file.Write(content); err != nil {
-			return 0, err
-		}
-	}
-	
-	return len(p), nil
 }
 
 // Close closes the log file

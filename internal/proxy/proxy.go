@@ -25,13 +25,23 @@ func New(cfg *config.Config) (*Manager, error) {
 		return nil, err
 	}
 
+	proxy := createReverseProxy(targetURL, cfg)
+
+	return &Manager{
+		Config: cfg,
+		proxy:  proxy,
+	}, nil
+}
+
+// createReverseProxy creates a configured reverse proxy for the given target URL
+func createReverseProxy(targetURL *url.URL, cfg *config.Config) *httputil.ReverseProxy {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
-	
-	// Customize the director function to modify the request
+
+	// Configure director
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
-		
+
 		// Apply path rewriting
 		for pattern, replacement := range cfg.Global.ProxyConfig.PathRewrite {
 			re, err := regexp.Compile(pattern)
@@ -46,21 +56,15 @@ func New(cfg *config.Config) (*Manager, error) {
 			req.Host = targetURL.Host
 		}
 	}
-	
-	// Add custom error handler to log errors to file instead of displaying in TUI
+
+	// Add custom error handler
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-		// Log the error to the debug.log file
 		logger.ProxyError(targetURL.String(), err)
-		
-		// Return an appropriate error response to the client
 		w.WriteHeader(http.StatusBadGateway)
 		w.Write([]byte("Proxy Error"))
 	}
 
-	return &Manager{
-		Config: cfg,
-		proxy:  proxy,
-	}, nil
+	return proxy
 }
 
 // Handle handles a request by proxying it to the real server
@@ -109,39 +113,7 @@ func (m *Manager) UpdateTarget(target string) error {
 	logger.Info("Set proxy target in config: %s", target)
 	
 	// Create a new proxy with the updated target
-	proxy := httputil.NewSingleHostReverseProxy(targetURL)
-	
-	// Customize the director function to modify the request
-	originalDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		originalDirector(req)
-		
-		// Apply path rewriting
-		for pattern, replacement := range m.Config.Global.ProxyConfig.PathRewrite {
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				continue
-			}
-			req.URL.Path = re.ReplaceAllString(req.URL.Path, replacement)
-		}
-
-		// Set the Host header to the target host if changeOrigin is true
-		if m.Config.Global.ProxyConfig.ChangeOrigin {
-			req.Host = targetURL.Host
-		}
-	}
-	
-	// Add custom error handler to log errors to file instead of displaying in TUI
-	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-		// Log the error to the debug.log file
-		logger.ProxyError(targetURL.String(), err)
-		
-		// Return an appropriate error response to the client
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write([]byte("Proxy Error"))
-	}
-
-	m.proxy = proxy
+	m.proxy = createReverseProxy(targetURL, m.Config)
 	logger.Info("Created new proxy with target: %s", target)
 	
 	logger.Info("Saving global config...")

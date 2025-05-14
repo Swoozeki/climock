@@ -196,51 +196,29 @@ func (c *Config) SaveGlobalConfig() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// Use the BaseDir directly without trying to get the absolute path
 	path := filepath.Join(c.BaseDir, "config.json")
-	logger.Info("Saving global config to: %s", path)
-	
+
 	// Check if directory exists
 	dirInfo, err := os.Stat(c.BaseDir)
 	if err != nil {
-		logger.Error("Failed to stat directory: %v", err)
-		return err
-	}
-	
-	if !dirInfo.IsDir() {
-		errMsg := fmt.Sprintf("%s is not a directory", c.BaseDir)
-		logger.Error(errMsg)
-		return fmt.Errorf(errMsg)
-	}
-	
-	// Print the current proxy target for debugging
-	logger.Info("Current proxy target: %s", c.Global.ProxyConfig.Target)
-	
-	data, err := json.MarshalIndent(c.Global, "", "  ")
-	if err != nil {
-		logger.Error("Failed to marshal global config: %v", err)
-		return err
+		return fmt.Errorf("failed to stat directory: %w", err)
 	}
 
-	// Print the marshaled data for debugging
-	logger.Info("Marshaled data: %s", string(data))
-	
+	if !dirInfo.IsDir() {
+		return fmt.Errorf("%s is not a directory", c.BaseDir)
+	}
+
+	data, err := json.MarshalIndent(c.Global, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal global config: %w", err)
+	}
+
 	// Write directly to the file
 	if err := os.WriteFile(path, data, 0644); err != nil {
-		logger.Error("Failed to write config file: %v", err)
-		return err
+		return fmt.Errorf("failed to write config file: %w", err)
 	}
-	
+
 	logger.Info("Global config saved successfully to %s", path)
-	
-	// Verify the file was written correctly
-	readData, err := os.ReadFile(path)
-	if err != nil {
-		logger.Error("Failed to read config file after writing: %v", err)
-	} else {
-		logger.Info("Read data after writing: %s", string(readData))
-	}
-	
 	return nil
 }
 

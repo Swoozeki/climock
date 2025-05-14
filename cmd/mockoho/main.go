@@ -49,45 +49,53 @@ func main() {
 	}
 }
 
-// runUI runs the UI
-func runUI(cmd *cobra.Command, args []string) {
+// setupServer initializes and returns the common components needed for both UI and server modes
+func setupServer() (*config.Config, *mock.Manager, *proxy.Manager, *server.Server, error) {
 	// Initialize logger
 	if err := logger.Init(debugMode); err != nil {
-		fmt.Printf("Error initializing logger: %v\n", err)
+		return nil, nil, nil, nil, fmt.Errorf("error initializing logger: %v", err)
+	}
+
+	// Ensure config directory exists
+	if err := ensureConfigDir(); err != nil {
+		logger.Error("Failed to ensure config directory: %v", err)
+		return nil, nil, nil, nil, fmt.Errorf("error: %v", err)
+	}
+
+	// Create config
+	cfg := config.New(ConfigDir)
+	if err := cfg.Load(); err != nil {
+		logger.Error("Failed to load configuration: %v", err)
+		return nil, nil, nil, nil, fmt.Errorf("error loading configuration: %v", err)
+	}
+
+	// Create mock manager
+	mockManager := mock.New(cfg)
+
+	// Create proxy manager
+	proxyManager, err := proxy.New(cfg)
+	if err != nil {
+		logger.Error("Failed to create proxy manager: %v", err)
+		return nil, nil, nil, nil, fmt.Errorf("error creating proxy manager: %v", err)
+	}
+
+	// Create server
+	srv := server.New(cfg, mockManager, proxyManager)
+
+	return cfg, mockManager, proxyManager, srv, nil
+}
+
+// runUI runs the UI
+func runUI(cmd *cobra.Command, args []string) {
+	// Setup server components
+	cfg, mockManager, proxyManager, srv, err := setupServer()
+	if err != nil {
+		fmt.Printf("Error setting up server: %v\n", err)
 		os.Exit(1)
 	}
 	defer logger.Close()
 	
 	logger.Info("Starting Mockoho UI")
-	
-	// Ensure config directory exists
-	if err := ensureConfigDir(); err != nil {
-		logger.Error("Failed to ensure config directory: %v", err)
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-	
-	// Create config
-	cfg := config.New(ConfigDir)
-	if err := cfg.Load(); err != nil {
-		logger.Error("Failed to load configuration: %v", err)
-		fmt.Printf("Error loading configuration: %v\n", err)
-		os.Exit(1)
-	}
-	
-	// Create mock manager
-	mockManager := mock.New(cfg)
-	
-	// Create proxy manager
-	proxyManager, err := proxy.New(cfg)
-	if err != nil {
-		logger.Error("Failed to create proxy manager: %v", err)
-		fmt.Printf("Error creating proxy manager: %v\n", err)
-		os.Exit(1)
-	}
-	
-	// Create server
-	srv := server.New(cfg, mockManager, proxyManager)
 	
 	// Create UI model
 	model := ui.New(cfg, mockManager, proxyManager, srv)
@@ -121,43 +129,15 @@ func serverCmd() *cobra.Command {
 
 // runServer runs the server without the UI
 func runServer(cmd *cobra.Command, args []string) {
-	// Initialize logger
-	if err := logger.Init(debugMode); err != nil {
-		fmt.Printf("Error initializing logger: %v\n", err)
+	// Setup server components
+	_, _, _, srv, err := setupServer()
+	if err != nil {
+		fmt.Printf("Error setting up server: %v\n", err)
 		os.Exit(1)
 	}
 	defer logger.Close()
 	
 	logger.Info("Starting Mockoho server")
-	
-	// Ensure config directory exists
-	if err := ensureConfigDir(); err != nil {
-		logger.Error("Failed to ensure config directory: %v", err)
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-	
-	// Create config
-	cfg := config.New(ConfigDir)
-	if err := cfg.Load(); err != nil {
-		logger.Error("Failed to load configuration: %v", err)
-		fmt.Printf("Error loading configuration: %v\n", err)
-		os.Exit(1)
-	}
-	
-	// Create mock manager
-	mockManager := mock.New(cfg)
-	
-	// Create proxy manager
-	proxyManager, err := proxy.New(cfg)
-	if err != nil {
-		logger.Error("Failed to create proxy manager: %v", err)
-		fmt.Printf("Error creating proxy manager: %v\n", err)
-		os.Exit(1)
-	}
-	
-	// Create server
-	srv := server.New(cfg, mockManager, proxyManager)
 	
 	// Start server
 	if err := srv.Start(); err != nil {

@@ -128,6 +128,12 @@ func (s *Server) handleRequest(c *gin.Context) {
 		return
 	}
 
+	// Handle the mock response
+	s.handleMockResponse(c, endpoint, path)
+}
+
+// handleMockResponse generates and sends a mock response
+func (s *Server) handleMockResponse(c *gin.Context, endpoint *config.Endpoint, path string) {
 	// Extract path parameters
 	params := s.MockManager.ExtractParams(endpoint.Path, path)
 
@@ -145,30 +151,36 @@ func (s *Server) handleRequest(c *gin.Context) {
 		time.Sleep(time.Duration(response.Delay) * time.Millisecond)
 	}
 
+	// Send the response
+	s.sendResponse(c, response)
+}
+
+// sendResponse sends the response to the client
+func (s *Server) sendResponse(c *gin.Context, response *config.Response) {
 	// Set response headers
 	for key, value := range response.Headers {
 		c.Header(key, value)
 	}
 
-	// Set response status and body
+	// Set response status
 	c.Status(response.Status)
-	
-	// Check if the body is a string that needs to be parsed as JSON
+
+	// Handle string JSON bodies
 	if bodyStr, ok := response.Body.(string); ok {
 		var jsonBody interface{}
 		if err := json.Unmarshal([]byte(bodyStr), &jsonBody); err == nil {
 			c.Writer.Header().Set("Content-Type", "application/json")
 			c.Writer.WriteString(bodyStr)
-			
+
 			// Log the request
 			logger.HTTPRequest(c.Request.Method, c.Request.URL.Path, c.ClientIP(), c.Writer.Status(), time.Since(time.Now()))
 			return
 		}
 	}
-	
+
 	// Otherwise, render as JSON
 	c.JSON(response.Status, response.Body)
-	
+
 	// Log the request
 	logger.HTTPRequest(c.Request.Method, c.Request.URL.Path, c.ClientIP(), c.Writer.Status(), time.Since(time.Now()))
 }

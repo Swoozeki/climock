@@ -363,3 +363,50 @@
 [2025-05-14 08:00:31.869] INFO    (logger.go:63) Logger initialized, debug mode: false
 
 
+
+
+[2025-05-14 09:06:21.339] INFO    (logger.go:55) Logger initialized, debug mode: false
+[2025-05-14 09:06:21.341] INFO    (main.go:98) Starting Mockoho UI
+[2025-05-14 09:06:25.006] INFO    (mock.go:153) Toggled endpoint get-eligibility in feature transaction-instalments to false
+[2025-05-14 09:06:25.007] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:25.456] INFO    (mock.go:153) Toggled endpoint get-eligibility in feature transaction-instalments to true
+[2025-05-14 09:06:25.458] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:27.173] INFO    (mock.go:177) Set default response for endpoint get-eligibility in feature transaction-instalments to eligible
+[2025-05-14 09:06:27.174] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:27.608] INFO    (mock.go:177) Set default response for endpoint get-eligibility in feature transaction-instalments to ineligible
+[2025-05-14 09:06:27.609] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:28.033] INFO    (mock.go:177) Set default response for endpoint get-eligibility in feature transaction-instalments to 404
+[2025-05-14 09:06:28.033] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:44.712] INFO    (mock.go:177) Set default response for endpoint get-eligibility in feature transaction-instalments to eligible
+[2025-05-14 09:06:44.714] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:45.585] INFO    (mock.go:177) Set default response for endpoint get-eligibility in feature transaction-instalments to ineligible
+[2025-05-14 09:06:45.587] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:46.270] INFO    (mock.go:177) Set default response for endpoint get-eligibility in feature transaction-instalments to 404
+[2025-05-14 09:06:46.271] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:48.246] INFO    (mock.go:153) Toggled endpoint get-eligibility in feature transaction-instalments to false
+[2025-05-14 09:06:48.247] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:06:48.945] INFO    (mock.go:153) Toggled endpoint get-eligibility in feature transaction-instalments to true
+[2025-05-14 09:06:48.947] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/transaction-instalments.json
+[2025-05-14 09:07:14.730] INFO    (mock.go:184) Creating endpoint remove-user in feature users
+[2025-05-14 09:07:14.733] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/users.json
+[2025-05-14 09:07:14.733] INFO    (mock.go:197) Endpoint remove-user created successfully in feature users
+[2025-05-14 09:07:44.077] INFO    (mock.go:221) Deleting endpoint remove-user from feature users
+[2025-05-14 09:07:44.080] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/users.json
+[2025-05-14 09:07:44.080] INFO    (mock.go:233) Endpoint remove-user deleted successfully from feature users
+[2025-05-14 09:07:47.182] INFO    (mock.go:203) Creating feature foo
+[2025-05-14 09:07:47.183] INFO    (config.go:189) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 09:07:47.184] INFO    (mock.go:215) Feature foo created successfully
+[2025-05-14 09:07:51.958] INFO    (mock.go:239) Deleting feature foo
+[2025-05-14 09:07:51.959] INFO    (config.go:344) Feature foo deleted successfully
+[2025-05-14 09:07:51.959] INFO    (mock.go:246) Feature foo deleted successfully
+[2025-05-14 09:07:53.787] INFO    (model.go:617) User requested to start server
+[2025-05-14 09:07:53.788] INFO    (server.go:66) Server started at localhost:3000
+[2025-05-14 09:07:59.998] INFO    (server.go:185) GET /api/products from 127.0.0.1 - 200 (416ns)
+[2025-05-14 09:08:01.924] INFO    (proxy.go:83) Proxy response from https://api.sandbox-koho.ca to /api/product - 404 (543.579583ms)
+[2025-05-14 09:09:18.728] INFO    (model.go:609) User requested to stop server
+[2025-05-14 09:09:18.729] INFO    (server.go:82) Stopping server at localhost:3000
+[2025-05-14 09:09:18.729] INFO    (server.go:93) Server stopped
+[2025-05-14 09:09:19.466] INFO    (model.go:617) User requested to start server
+[2025-05-14 09:09:19.466] INFO    (server.go:66) Server started at localhost:3000
+[2025-05-14 09:09:20.793] INFO    (main.go:116) UI closed
+[2025-05-14 09:09:20.793] INFO    (logger.go:63) Logger shutting down
