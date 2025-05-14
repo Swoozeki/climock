@@ -118,33 +118,43 @@ func New(cfg *config.Config, mockManager *mock.Manager, proxyManager *proxy.Mana
 func (m *Model) initStyles() {
 	// Header style
 	m.styles.header = lipgloss.NewStyle().
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true)
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("63")).
+		BorderBottom(true).
+		Padding(1, 2)
 	
 	// Panel title styles
 	m.styles.featureTitle = lipgloss.NewStyle().
 		Width(m.width/4).
 		Align(lipgloss.Left).
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true)
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("63")).
+		BorderBottom(true).
+		Padding(0, 1)
 	
 	m.styles.endpointsTitle = lipgloss.NewStyle().
 		Width(3*m.width/4).
 		Align(lipgloss.Left).
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true)
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("63")).
+		BorderBottom(true).
+		Padding(0, 1)
 	
 	// List styles
 	m.styles.features = lipgloss.NewStyle().
-		Width(m.width/4)
+		Width(m.width/4).
+		Padding(0, 1)
 	
 	m.styles.endpoints = lipgloss.NewStyle().
-		Width(3*m.width/4)
+		Width(3*m.width/4).
+		Padding(0, 1)
 	
 	// Footer style
 	m.styles.footer = lipgloss.NewStyle().
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderTop(true)
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("63")).
+		BorderTop(true).
+		Padding(0, 2)
 }
 
 // Init initializes the UI model
@@ -169,8 +179,12 @@ func (m *Model) Init() tea.Cmd {
 				bottomHeight := 2 // Footer height
 				listHeight := height - topHeight - bottomHeight
 				
-				m.featuresList.SetSize(width/4, listHeight)
-				m.endpointsList.SetSize(3*width/4, listHeight)
+				// Adjust widths to account for borders
+				featureWidth := width/4 - 2
+				endpointWidth := 3*width/4 - 2
+				
+				m.featuresList.SetSize(featureWidth, listHeight)
+				m.endpointsList.SetSize(endpointWidth, listHeight)
 				m.help.Width = width
 			}
 			
@@ -200,7 +214,10 @@ func (m *Model) initFeaturesList() {
 		listHeight = 10 // Default if height not set yet
 	}
 	
-	m.featuresList = list.New(items, delegate, m.width/4, listHeight)
+	// Adjust width to account for borders
+	featureWidth := m.width/4 - 2
+	
+	m.featuresList = list.New(items, delegate, featureWidth, listHeight)
 	m.featuresList.Title = "Features"
 	m.featuresList.SetShowStatusBar(false)
 	m.featuresList.SetFilteringEnabled(false)
@@ -261,7 +278,10 @@ func (m *Model) initEndpointsList() {
 		listHeight = 10 // Default if height not set yet
 	}
 	
-	m.endpointsList = list.New(items, delegate, 3*m.width/4, listHeight)
+	// Adjust width to account for borders
+	endpointWidth := 3*m.width/4 - 2
+	
+	m.endpointsList = list.New(items, delegate, endpointWidth, listHeight)
 	m.endpointsList.Title = fmt.Sprintf("Endpoints (%s)", m.selectedFeature)
 	m.endpointsList.SetShowStatusBar(false)
 	m.endpointsList.SetFilteringEnabled(false)
@@ -407,8 +427,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		bottomHeight := 2 // Footer height
 		listHeight := m.height - topHeight - bottomHeight
 		
-		m.featuresList.SetSize(m.width/4, listHeight)
-		m.endpointsList.SetSize(3*m.width/4, listHeight)
+		// Adjust widths to account for borders (subtract 2 for borders)
+		featureWidth := m.width/4 - 2
+		endpointWidth := 3*m.width/4 - 2
+		
+		m.featuresList.SetSize(featureWidth, listHeight)
+		m.endpointsList.SetSize(endpointWidth, listHeight)
 		
 		m.help.Width = m.width
 		

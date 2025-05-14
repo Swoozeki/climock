@@ -21,11 +21,7 @@ func (m *Model) View() string {
 	sb.WriteString(m.renderHeader())
 	sb.WriteString("\n")
 
-	// Panel titles
-	sb.WriteString(m.renderPanelTitles())
-	sb.WriteString("\n")
-
-	// Lists
+	// Lists (with their own titles)
 	sb.WriteString(m.renderLists())
 	sb.WriteString("\n")
 
@@ -40,6 +36,11 @@ func (m *Model) renderHeader() string {
 	// Use cached style with updated width
 	headerStyle := m.styles.header.Copy().Width(m.width)
 
+	// Title style similar to dialog titles
+	titleStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("205"))
+
 	serverStatus := "Stopped"
 	if m.Server.IsRunning() {
 		serverStatus = fmt.Sprintf("Running (%s)", m.Server.GetAddress())
@@ -48,40 +49,41 @@ func (m *Model) renderHeader() string {
 	proxyTarget := m.ProxyManager.GetTargetURL()
 	header := fmt.Sprintf("Server: %s | Proxy: %s", serverStatus, proxyTarget)
 
-	return headerStyle.Render("Mockoho - " + header)
-}
-
-// renderPanelTitles renders the panel titles
-func (m *Model) renderPanelTitles() string {
-	// Use cached styles with updated widths
-	featuresTitleStyle := m.styles.featureTitle.Copy().Width(m.width/4)
-	endpointsTitleStyle := m.styles.endpointsTitle.Copy().Width(3*m.width/4)
-
-	// Apply enhanced styling for active panel
-	if m.activePanel == FeaturesPanel {
-		featuresTitleStyle = featuresTitleStyle.
-			Bold(true).
-			Background(lipgloss.Color("63")).
-			Foreground(lipgloss.Color("255"))
-		featureTitle := featuresTitleStyle.Render("▶ Features ◀")
-		endpointsTitle := endpointsTitleStyle.Render(fmt.Sprintf("Endpoints (%s)", m.selectedFeature))
-		return lipgloss.JoinHorizontal(lipgloss.Top, featureTitle, endpointsTitle)
-	} else {
-		endpointsTitleStyle = endpointsTitleStyle.
-			Bold(true).
-			Background(lipgloss.Color("63")).
-			Foreground(lipgloss.Color("255"))
-		featureTitle := featuresTitleStyle.Render("Features")
-		endpointsTitle := endpointsTitleStyle.Render(fmt.Sprintf("▶ Endpoints (%s) ◀", m.selectedFeature))
-		return lipgloss.JoinHorizontal(lipgloss.Top, featureTitle, endpointsTitle)
-	}
+	return headerStyle.Render(titleStyle.Render("Mockoho") + " - " + header)
 }
 
 // renderLists renders the feature and endpoint lists
 func (m *Model) renderLists() string {
-	// Use cached styles with updated widths
-	featuresStyle := m.styles.features.Copy().Width(m.width/4)
-	endpointsStyle := m.styles.endpoints.Copy().Width(3*m.width/4)
+	// Calculate widths accounting for borders (subtract border width)
+	// Border takes 2 characters (1 on each side)
+	featureWidth := m.width/4 - 2
+	endpointWidth := 3*m.width/4 - 2
+	
+	// Use cached styles with adjusted widths
+	featuresStyle := m.styles.features.Copy().Width(featureWidth)
+	endpointsStyle := m.styles.endpoints.Copy().Width(endpointWidth)
+
+	// Apply border styling to both panels consistently
+	// Use a highlighted border for the active panel
+	featuresStyle = featuresStyle.
+		BorderStyle(lipgloss.RoundedBorder())
+	
+	endpointsStyle = endpointsStyle.
+		BorderStyle(lipgloss.RoundedBorder())
+	
+	// Highlight the active panel with a different border color
+	// Use a much lighter color (253) for inactive borders
+	if m.activePanel == FeaturesPanel {
+		featuresStyle = featuresStyle.
+			BorderForeground(lipgloss.Color("63"))
+		endpointsStyle = endpointsStyle.
+			BorderForeground(lipgloss.Color("253"))
+	} else {
+		featuresStyle = featuresStyle.
+			BorderForeground(lipgloss.Color("253"))
+		endpointsStyle = endpointsStyle.
+			BorderForeground(lipgloss.Color("63"))
+	}
 
 	featuresView := featuresStyle.Render(m.featuresList.View())
 	endpointsView := endpointsStyle.Render(m.endpointsList.View())
@@ -94,7 +96,11 @@ func (m *Model) renderFooter() string {
 	// Use cached style with updated width
 	footerStyle := m.styles.footer.Copy().Width(m.width)
 
-	return footerStyle.Render(m.help.View(m.keyMap))
+	// Style for the footer content
+	footerContentStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("240"))
+
+	return footerStyle.Render(footerContentStyle.Render(m.help.View(m.keyMap)))
 }
 
 // renderDialog renders the active dialog
