@@ -8,8 +8,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
 )
 
 // Manager handles mock endpoints and response generation

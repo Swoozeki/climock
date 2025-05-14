@@ -3,9 +3,9 @@ package proxy_test
 import (
 	"testing"
 
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
-	"github.com/mockoho/mockoho/internal/proxy"
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/proxy"
 )
 
 func init() {

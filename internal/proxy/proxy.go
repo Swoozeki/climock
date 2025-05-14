@@ -10,10 +10,11 @@ import (
 	"regexp"
 	"time"
 
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/middleware"
+
 	"github.com/gin-gonic/gin"
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
-	"github.com/mockoho/mockoho/internal/middleware"
 )
 
 // Manager handles proxying requests to the real server

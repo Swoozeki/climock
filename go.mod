@@ -1,4 +1,4 @@
-module github.com/mockoho/mockoho
+module kohofinancial/mockoho
 
 go 1.23.0
 

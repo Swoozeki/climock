@@ -3,13 +3,14 @@ package ui_test
 import (
 	"testing"
 
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/mock"
+	"kohofinancial/mockoho/internal/proxy"
+	"kohofinancial/mockoho/internal/server"
+	"kohofinancial/mockoho/internal/ui"
+
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
-	"github.com/mockoho/mockoho/internal/mock"
-	"github.com/mockoho/mockoho/internal/proxy"
-	"github.com/mockoho/mockoho/internal/server"
-	"github.com/mockoho/mockoho/internal/ui"
 )
 
 func init() {

@@ -14,21 +14,21 @@ Mockoho is a powerful mock server system designed to facilitate frontend develop
 
 ### Option 1: Download Binary (Recommended)
 
-1. Download the latest release for your platform from [GitHub Releases](https://github.com/mockoho/mockoho/releases)
+1. Download the latest release for your platform from [GitHub Releases](https://github.com/kohofinancial/mockoho/releases)
 2. Extract the archive
 3. Move the binary to a location in your PATH (optional)
 
 ### Option 2: Using Go Install (Requires Go)
 
 ```bash
-go install github.com/mockoho/mockoho@latest
+go install github.com/kohofinancial/mockoho@latest
 ```
 
 ### Option 3: Building from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/mockoho/mockoho.git
+git clone https://github.com/kohofinancial/mockoho.git
 cd mockoho
 
 # Build the application

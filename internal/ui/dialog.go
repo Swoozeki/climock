@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
+
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
 )
 
 // showNewFeatureDialog shows the new feature dialog

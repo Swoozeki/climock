@@ -8,17 +8,18 @@ import (
 	"strings"
 	"time"
 
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/mock"
+	"kohofinancial/mockoho/internal/proxy"
+	"kohofinancial/mockoho/internal/server"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
-	"github.com/mockoho/mockoho/internal/mock"
-	"github.com/mockoho/mockoho/internal/proxy"
-	"github.com/mockoho/mockoho/internal/server"
 	"golang.org/x/term"
 )
 

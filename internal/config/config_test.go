@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
 )
 
 func init() {

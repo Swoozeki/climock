@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mockoho/mockoho/internal/config"
-	"github.com/mockoho/mockoho/internal/logger"
-	"github.com/mockoho/mockoho/internal/mock"
-	"github.com/mockoho/mockoho/internal/proxy"
-	"github.com/mockoho/mockoho/internal/server"
+	"kohofinancial/mockoho/internal/config"
+	"kohofinancial/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/mock"
+	"kohofinancial/mockoho/internal/proxy"
+	"kohofinancial/mockoho/internal/server"
 )
 
 func init() {

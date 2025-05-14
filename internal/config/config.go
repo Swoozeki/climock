@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/mockoho/mockoho/internal/logger"
+	"kohofinancial/mockoho/internal/logger"
 )
 
 // ProxyConfig holds the proxy server configuration
