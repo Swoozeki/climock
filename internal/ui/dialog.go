@@ -1,10 +1,7 @@
 package ui
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -348,63 +345,19 @@ func (m *Model) showProxyConfigDialog() {
 				return fmt.Errorf("proxy target must start with http:// or https://")
 			}
 			
-			logger.Info("Updating proxy target to: %s", target)
-			
-			// Update the in-memory configuration
-			m.Config.Global.ProxyConfig.Target = target
-			
-			// Direct file update
-			configPath := filepath.Join(m.Config.BaseDir, "config.json")
-			logger.Info("Directly writing to config file: %s", configPath)
-			
-			// Read the current file content
-			data, err := os.ReadFile(configPath)
-			if err != nil {
-				logger.Error("Failed to read config file: %v", err)
-				return fmt.Errorf("failed to read config file: %v", err)
-			}
-			
-			// Parse the JSON
-			var configData map[string]interface{}
-			if err := json.Unmarshal(data, &configData); err != nil {
-				logger.Error("Failed to parse config file: %v", err)
-				return fmt.Errorf("failed to parse config file: %v", err)
-			}
-			
-			// Update the proxy target
-			proxyConfig, ok := configData["proxyConfig"].(map[string]interface{})
-			if !ok {
-				proxyConfig = make(map[string]interface{})
-				configData["proxyConfig"] = proxyConfig
-			}
-			proxyConfig["target"] = target
-			
-			// Write the updated config back to the file
-			updatedData, err := json.MarshalIndent(configData, "", "  ")
-			if err != nil {
-				logger.Error("Failed to marshal config data: %v", err)
-				return fmt.Errorf("failed to marshal config data: %v", err)
-			}
-			
-			if err := os.WriteFile(configPath, updatedData, 0644); err != nil {
-				logger.Error("Failed to write config file: %v", err)
-				return fmt.Errorf("failed to write config file: %v", err)
-			}
-			
-			// Update the proxy manager
+			// Update the proxy manager - this will handle updating the config and saving it
 			if err := m.ProxyManager.UpdateTarget(target); err != nil {
-				logger.Error("Failed to update proxy manager: %v", err)
-				// We've already updated the file, so just log the error
+				logger.Error("Failed to update proxy target: %v", err)
+				return fmt.Errorf("failed to update proxy target: %v", err)
 			}
 			
-			logger.Info("Proxy target updated successfully to: %s", target)
 			return nil
 		}
 	}
 	
 	m.dialogCancelFn = func() tea.Cmd {
 		return func() tea.Msg {
-			logger.Info("Proxy configuration cancelled")
+			logger.LogDebug("Proxy configuration cancelled")
 			return nil
 		}
 	}

@@ -101,7 +101,8 @@ func (r *responseRecorder) WriteHeader(statusCode int) {
 
 // UpdateTarget updates the proxy target
 func (m *Manager) UpdateTarget(target string) error {
-	logger.Info("Updating proxy target to: %s", target)
+	// Only log at debug level for detailed operations
+	logger.LogDebug("Updating proxy target to: %s", target)
 	
 	targetURL, err := url.Parse(target)
 	if err != nil {
@@ -110,19 +111,19 @@ func (m *Manager) UpdateTarget(target string) error {
 	}
 
 	m.Config.Global.ProxyConfig.Target = target
-	logger.Info("Set proxy target in config: %s", target)
 	
 	// Create a new proxy with the updated target
 	m.proxy = createReverseProxy(targetURL, m.Config)
-	logger.Info("Created new proxy with target: %s", target)
 	
-	logger.Info("Saving global config...")
+	// Save the global config
 	err = m.Config.SaveGlobalConfig()
 	if err != nil {
 		logger.Error("Failed to save global config: %v", err)
 		return err
 	}
-	logger.Info("Global config saved successfully")
+	
+	// Log success at info level
+	logger.Info("Proxy target updated to: %s", target)
 	
 	return nil
 }

@@ -13,12 +13,47 @@ var (
 	// Logger is the global logger instance
 	Logger *log.Logger
 	
-	// File is the log file
-	File *os.File
-	
 	// IsDebugMode determines whether debug messages are logged
 	IsDebugMode bool
+	
+	// MaxLogSize is the maximum size of the log file in bytes (5MB)
+	MaxLogSize int64 = 5 * 1024 * 1024
 )
+
+// PrependWriter is a custom writer that prepends log entries to a file
+type PrependWriter struct {
+	filePath string
+}
+
+// Write implements the io.Writer interface
+func (w *PrependWriter) Write(p []byte) (n int, err error) {
+	// Read the existing content
+	content, err := os.ReadFile(w.filePath)
+	if err != nil && !os.IsNotExist(err) {
+		return 0, err
+	}
+	
+	// Create or truncate the file
+	file, err := os.Create(w.filePath)
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+	
+	// Write the new log entry
+	if _, err := file.Write(p); err != nil {
+		return 0, err
+	}
+	
+	// If there was existing content, append it
+	if len(content) > 0 {
+		if _, err := file.Write(content); err != nil {
+			return 0, err
+		}
+	}
+	
+	return len(p), nil
+}
 
 // Colors for console output
 const (
@@ -36,34 +71,60 @@ const (
 func Init(debug bool) error {
 	IsDebugMode = debug
 
-	// Open the log file for appending
-	var err error
-	File, err = os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open log file: %w", err)
-	}
-
-	// Initialize the logger
-	Logger = log.New(File, "", 0)
-
-	// Add a line break to separate sessions
-	if _, err := File.WriteString("\n\n"); err != nil {
-		return fmt.Errorf("failed to write session separator: %w", err)
-	}
+	// Create a custom writer that prepends log entries
+	writer := &PrependWriter{filePath: "debug.log"}
+	
+	// Initialize the logger with the custom writer
+	Logger = log.New(writer, "", 0)
+	
+	// Add a simple blank line as session separator
+	Logger.Println("\n")
 
 	// Log initialization
 	Info("Logger initialized, debug mode: %v", debug)
 
+	// Trim the log file if it's too large
+	go trimLogFile("debug.log", MaxLogSize)
+
 	return nil
 }
 
-// Close closes the log file
-func Close() {
-	if File != nil {
-		Info("Logger shutting down")
-		File.Close()
-		File = nil
+// trimLogFile trims the log file to the specified maximum size
+func trimLogFile(filePath string, maxSize int64) {
+	// Check if the file exists
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return
 	}
+	
+	// If the file is smaller than the maximum size, do nothing
+	if info.Size() <= maxSize {
+		return
+	}
+	
+	// Read the file content
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return
+	}
+	
+	// Calculate how much to keep (half of the max size)
+	keepSize := maxSize / 2
+	if int64(len(content)) > keepSize {
+		// Keep only the first part of the file
+		content = content[:keepSize]
+	}
+	
+	// Write the trimmed content back to the file
+	os.WriteFile(filePath, content, 0644)
+}
+
+// Close logs a shutdown message
+func Close() {
+	Info("Logger shutting down")
+	// With our new approach, we don't need to close a file
+	// since we're using a custom writer that opens and closes
+	// the file for each write operation
 }
 
 // formatMessage formats a log message with timestamp, level, and caller info

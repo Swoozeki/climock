@@ -218,7 +218,8 @@ func (c *Config) SaveGlobalConfig() error {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
-	logger.Info("Global config saved successfully to %s", path)
+	// Only log at debug level for detailed operations
+	logger.LogDebug("Global config saved to %s", path)
 	return nil
 }
 

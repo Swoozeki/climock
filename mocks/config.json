@@ -1,6 +1,6 @@
 {
   "proxyConfig": {
-    "target": "https://api.sandbox-koho.ca",
+    "target": "https://api.sandbox-api.ca",
     "changeOrigin": true,
     "pathRewrite": {
       "^/api": ""
