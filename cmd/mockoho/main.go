@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mockoho/mockoho/internal/config"
@@ -193,32 +196,76 @@ func ensureConfigDir() error {
 	return nil
 }
 
+// promptUserForConfig prompts the user for configuration values
+func promptUserForConfig() (string, int, string) {
+	reader := bufio.NewReader(os.Stdin)
+	
+	// Prompt for proxy target
+	fmt.Print("Enter proxy target URL [https://api.real-server.com]: ")
+	proxyTarget, _ := reader.ReadString('\n')
+	proxyTarget = strings.TrimSpace(proxyTarget)
+	if proxyTarget == "" {
+		proxyTarget = "https://api.real-server.com"
+	}
+	
+	// Prompt for server port
+	var port int = 3000
+	fmt.Print("Enter mock server port [3000]: ")
+	portStr, _ := reader.ReadString('\n')
+	portStr = strings.TrimSpace(portStr)
+	if portStr != "" {
+		portVal, err := strconv.Atoi(portStr)
+		if err == nil && portVal > 0 && portVal < 65536 {
+			port = portVal
+		} else {
+			fmt.Println("Invalid port number, using default: 3000")
+		}
+	}
+	
+	// Prompt for host
+	fmt.Print("Enter host [localhost]: ")
+	host, _ := reader.ReadString('\n')
+	host = strings.TrimSpace(host)
+	if host == "" {
+		host = "localhost"
+	}
+	
+	return proxyTarget, port, host
+}
+
 // createDefaultConfigs creates default configuration files
 func createDefaultConfigs() error {
 	// Create config.json
 	configPath := filepath.Join(ConfigDir, "config.json")
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		configContent := `{
+		fmt.Printf("\nNo configuration found in %s\n", ConfigDir)
+		fmt.Println("Please provide the following information to create a new configuration:")
+		
+		proxyTarget, port, host := promptUserForConfig()
+		
+		configContent := fmt.Sprintf(`{
   "proxyConfig": {
-    "target": "https://api.real-server.com",
+    "target": "%s",
     "changeOrigin": true,
     "pathRewrite": {
       "^/api": ""
     }
   },
   "serverConfig": {
-    "port": 3000,
-    "host": "localhost"
+    "port": %d,
+    "host": "%s"
   },
   "editor": {
     "command": "code",
     "args": ["-g", "{file}:{line}"]
   }
-}`
+}`, proxyTarget, port, host)
 		
 		if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
 			return err
 		}
+		
+		fmt.Printf("Configuration created successfully in %s\n\n", configPath)
 	}
 	
 	// Create example.json
