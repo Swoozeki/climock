@@ -14,6 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mockoho/mockoho/internal/config"
+	"github.com/mockoho/mockoho/internal/logger"
 	"github.com/mockoho/mockoho/internal/mock"
 	"github.com/mockoho/mockoho/internal/proxy"
 	"github.com/mockoho/mockoho/internal/server"
@@ -650,13 +651,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) toggleServer() tea.Cmd {
 	return func() tea.Msg {
 		if m.Server.IsRunning() {
+			logger.Info("User requested to stop server")
 			if err := m.Server.Stop(); err != nil {
+				logger.Error("Failed to stop server: %v", err)
 				return fmt.Errorf("failed to stop server: %v", err)
 			}
 			// Return a custom update message to trigger UI refresh
 			return customUpdateMsg{action: "server_toggled", active: false}
 		} else {
+			logger.Info("User requested to start server")
 			if err := m.Server.Start(); err != nil {
+				logger.Error("Failed to start server: %v", err)
 				return fmt.Errorf("failed to start server: %v", err)
 			}
 			// Return a custom update message to trigger UI refresh

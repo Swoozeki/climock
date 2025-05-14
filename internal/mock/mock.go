@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mockoho/mockoho/internal/config"
+	"github.com/mockoho/mockoho/internal/logger"
 )
 
 // Manager handles mock endpoints and response generation
@@ -33,6 +34,7 @@ func (m *Manager) FindEndpoint(method, path string) (*config.Endpoint, string, e
 			}
 		}
 	}
+	logger.LogDebug("No matching endpoint found for %s %s", method, path)
 	return nil, "", fmt.Errorf("no matching endpoint found for %s %s", method, path)
 }
 
@@ -94,12 +96,14 @@ func (m *Manager) GenerateResponse(endpoint *config.Endpoint, params map[string]
 	responseName := endpoint.DefaultResponse
 	response, ok := endpoint.Responses[responseName]
 	if !ok {
+		logger.Error("Response %s not found for endpoint %s", responseName, endpoint.ID)
 		return nil, fmt.Errorf("response %s not found for endpoint %s", responseName, endpoint.ID)
 	}
 
 	// Process template variables in the response body
 	processedResponse := response
 	if err := m.processResponseBody(&processedResponse, params); err != nil {
+		logger.Error("Failed to process response body: %v", err)
 		return nil, err
 	}
 
@@ -111,6 +115,7 @@ func (m *Manager) processResponseBody(response *config.Response, params map[stri
 	// Convert body to JSON string
 	bodyJSON, err := json.Marshal(response.Body)
 	if err != nil {
+		logger.Error("Failed to marshal response body: %v", err)
 		return err
 	}
 
@@ -123,17 +128,20 @@ func (m *Manager) processResponseBody(response *config.Response, params map[stri
 	// Process template
 	tmpl, err := template.New("body").Parse(string(bodyJSON))
 	if err != nil {
+		logger.Error("Failed to parse response template: %v", err)
 		return err
 	}
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
+		logger.Error("Failed to execute response template: %v", err)
 		return err
 	}
 
 	// Parse the processed JSON back into the response body
 	var processedBody interface{}
 	if err := json.Unmarshal(buf.Bytes(), &processedBody); err != nil {
+		logger.Error("Failed to unmarshal processed response: %v", err)
 		return err
 	}
 
@@ -145,13 +153,17 @@ func (m *Manager) processResponseBody(response *config.Response, params map[stri
 func (m *Manager) ToggleEndpoint(feature, id string) error {
 	endpoint, err := m.Config.GetEndpoint(feature, id)
 	if err != nil {
+		logger.Error("Failed to get endpoint %s in feature %s: %v", id, feature, err)
 		return err
 	}
 
 	endpoint.Active = !endpoint.Active
 	if err := m.Config.UpdateEndpoint(feature, *endpoint); err != nil {
+		logger.Error("Failed to update endpoint %s in feature %s: %v", id, feature, err)
 		return err
 	}
+	
+	logger.Info("Toggled endpoint %s in feature %s to %v", id, feature, endpoint.Active)
 
 	return m.Config.SaveFeatureConfig(feature)
 }
@@ -160,63 +172,90 @@ func (m *Manager) ToggleEndpoint(feature, id string) error {
 func (m *Manager) SetDefaultResponse(feature, id, response string) error {
 	endpoint, err := m.Config.GetEndpoint(feature, id)
 	if err != nil {
+		logger.Error("Failed to get endpoint %s in feature %s: %v", id, feature, err)
 		return err
 	}
 
 	if _, ok := endpoint.Responses[response]; !ok {
+		logger.Error("Response %s not found for endpoint %s", response, id)
 		return fmt.Errorf("response %s not found for endpoint %s", response, id)
 	}
 
 	endpoint.DefaultResponse = response
 	if err := m.Config.UpdateEndpoint(feature, *endpoint); err != nil {
+		logger.Error("Failed to update endpoint %s in feature %s: %v", id, feature, err)
 		return err
 	}
+	
+	logger.Info("Set default response for endpoint %s in feature %s to %s", id, feature, response)
 
 	return m.Config.SaveFeatureConfig(feature)
 }
 
 // CreateEndpoint creates a new endpoint
 func (m *Manager) CreateEndpoint(feature string, endpoint config.Endpoint) error {
-	fmt.Printf("Mock Manager: Creating endpoint %s in feature %s\n", endpoint.ID, feature)
+	logger.Info("Creating endpoint %s in feature %s", endpoint.ID, feature)
 	
 	if err := m.Config.AddEndpoint(feature, endpoint); err != nil {
-		fmt.Printf("Error adding endpoint to config: %v\n", err)
+		logger.Error("Failed to add endpoint to config: %v", err)
 		return fmt.Errorf("failed to add endpoint to config: %w", err)
 	}
 
-	fmt.Printf("Endpoint added to in-memory config, saving to file...\n")
+	logger.LogDebug("Endpoint added to in-memory config, saving to file...")
 	if err := m.Config.SaveFeatureConfig(feature); err != nil {
-		fmt.Printf("Error saving feature config: %v\n", err)
+		logger.Error("Failed to save feature config: %v", err)
 		return fmt.Errorf("failed to save feature config: %w", err)
 	}
 	
-	fmt.Printf("Feature config saved successfully\n")
+	logger.Info("Endpoint %s created successfully in feature %s", endpoint.ID, feature)
 	return nil
 }
 
 // CreateFeature creates a new feature
 func (m *Manager) CreateFeature(feature config.FeatureConfig) error {
+	logger.Info("Creating feature %s", feature.Feature)
+	
 	if err := m.Config.AddFeature(feature); err != nil {
+		logger.Error("Failed to add feature to config: %v", err)
 		return fmt.Errorf("failed to add feature to config: %w", err)
 	}
 
 	if err := m.Config.SaveFeatureConfig(feature.Feature); err != nil {
+		logger.Error("Failed to save feature config: %v", err)
 		return fmt.Errorf("failed to save feature config: %w", err)
 	}
 	
+	logger.Info("Feature %s created successfully", feature.Feature)
 	return nil
 }
 
 // DeleteEndpoint deletes an endpoint
 func (m *Manager) DeleteEndpoint(feature, id string) error {
+	logger.Info("Deleting endpoint %s from feature %s", id, feature)
+	
 	if err := m.Config.DeleteEndpoint(feature, id); err != nil {
+		logger.Error("Failed to delete endpoint %s from feature %s: %v", id, feature, err)
 		return err
 	}
 
-	return m.Config.SaveFeatureConfig(feature)
+	if err := m.Config.SaveFeatureConfig(feature); err != nil {
+		logger.Error("Failed to save feature config after deleting endpoint: %v", err)
+		return err
+	}
+	
+	logger.Info("Endpoint %s deleted successfully from feature %s", id, feature)
+	return nil
 }
 
 // DeleteFeature deletes a feature
 func (m *Manager) DeleteFeature(feature string) error {
-	return m.Config.DeleteFeature(feature)
+	logger.Info("Deleting feature %s", feature)
+	
+	if err := m.Config.DeleteFeature(feature); err != nil {
+		logger.Error("Failed to delete feature %s: %v", feature, err)
+		return err
+	}
+	
+	logger.Info("Feature %s deleted successfully", feature)
+	return nil
 }

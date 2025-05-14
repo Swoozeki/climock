@@ -5,9 +5,11 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mockoho/mockoho/internal/config"
+	"github.com/mockoho/mockoho/internal/logger"
 )
 
 // Manager handles proxying requests to the real server
@@ -44,6 +46,16 @@ func New(cfg *config.Config) (*Manager, error) {
 			req.Host = targetURL.Host
 		}
 	}
+	
+	// Add custom error handler to log errors to file instead of displaying in TUI
+	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+		// Log the error to the debug.log file
+		logger.ProxyError(targetURL.String(), err)
+		
+		// Return an appropriate error response to the client
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte("Proxy Error"))
+	}
 
 	return &Manager{
 		Config: cfg,
@@ -53,7 +65,34 @@ func New(cfg *config.Config) (*Manager, error) {
 
 // Handle handles a request by proxying it to the real server
 func (m *Manager) Handle(c *gin.Context) {
-	m.proxy.ServeHTTP(c.Writer, c.Request)
+	// Create a response recorder to capture the status code
+	responseRecorder := &responseRecorder{
+		ResponseWriter: c.Writer,
+		statusCode:     http.StatusOK, // Default status code
+	}
+	
+	// Use the response recorder instead of the original writer
+	start := time.Now()
+	m.proxy.ServeHTTP(responseRecorder, c.Request)
+	
+	// Log the proxied request
+	logger.Info("Proxy response from %s to %s - %d (%s)",
+		m.Config.Global.ProxyConfig.Target,
+		c.Request.URL.Path,
+		responseRecorder.statusCode,
+		time.Since(start))
+}
+
+// responseRecorder is a wrapper for http.ResponseWriter that captures the status code
+type responseRecorder struct {
+	gin.ResponseWriter
+	statusCode int
+}
+
+// WriteHeader captures the status code before writing it
+func (r *responseRecorder) WriteHeader(statusCode int) {
+	r.statusCode = statusCode
+	r.ResponseWriter.WriteHeader(statusCode)
 }
 
 // UpdateTarget updates the proxy target
@@ -86,6 +125,16 @@ func (m *Manager) UpdateTarget(target string) error {
 		if m.Config.Global.ProxyConfig.ChangeOrigin {
 			req.Host = targetURL.Host
 		}
+	}
+	
+	// Add custom error handler to log errors to file instead of displaying in TUI
+	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+		// Log the error to the debug.log file
+		logger.ProxyError(targetURL.String(), err)
+		
+		// Return an appropriate error response to the client
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte("Proxy Error"))
 	}
 
 	m.proxy = proxy

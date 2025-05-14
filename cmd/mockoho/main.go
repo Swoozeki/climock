@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mockoho/mockoho/internal/config"
+	"github.com/mockoho/mockoho/internal/logger"
 	"github.com/mockoho/mockoho/internal/mock"
 	"github.com/mockoho/mockoho/internal/proxy"
 	"github.com/mockoho/mockoho/internal/server"
@@ -20,6 +21,9 @@ var (
 	
 	// ConfigDir is the directory containing mock configurations
 	ConfigDir string
+	
+	// Debug mode flag
+	debugMode bool
 )
 
 func main() {
@@ -33,6 +37,7 @@ func main() {
 	
 	// Add flags
 	rootCmd.PersistentFlags().StringVarP(&ConfigDir, "config", "c", "mocks", "Directory containing mock configurations")
+	rootCmd.PersistentFlags().BoolVarP(&debugMode, "debug", "d", false, "Enable debug mode")
 	
 	// Add subcommands
 	rootCmd.AddCommand(serverCmd())
@@ -46,8 +51,18 @@ func main() {
 
 // runUI runs the UI
 func runUI(cmd *cobra.Command, args []string) {
+	// Initialize logger
+	if err := logger.Init(debugMode); err != nil {
+		fmt.Printf("Error initializing logger: %v\n", err)
+		os.Exit(1)
+	}
+	defer logger.Close()
+	
+	logger.Info("Starting Mockoho UI")
+	
 	// Ensure config directory exists
 	if err := ensureConfigDir(); err != nil {
+		logger.Error("Failed to ensure config directory: %v", err)
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
@@ -55,6 +70,7 @@ func runUI(cmd *cobra.Command, args []string) {
 	// Create config
 	cfg := config.New(ConfigDir)
 	if err := cfg.Load(); err != nil {
+		logger.Error("Failed to load configuration: %v", err)
 		fmt.Printf("Error loading configuration: %v\n", err)
 		os.Exit(1)
 	}
@@ -65,6 +81,7 @@ func runUI(cmd *cobra.Command, args []string) {
 	// Create proxy manager
 	proxyManager, err := proxy.New(cfg)
 	if err != nil {
+		logger.Error("Failed to create proxy manager: %v", err)
 		fmt.Printf("Error creating proxy manager: %v\n", err)
 		os.Exit(1)
 	}
@@ -83,9 +100,12 @@ func runUI(cmd *cobra.Command, args []string) {
 	)
 	
 	if _, err := p.Run(); err != nil {
+		logger.Error("Error running UI: %v", err)
 		fmt.Printf("Error running UI: %v\n", err)
 		os.Exit(1)
 	}
+	
+	logger.Info("UI closed")
 }
 
 // serverCmd returns the server subcommand
@@ -101,8 +121,18 @@ func serverCmd() *cobra.Command {
 
 // runServer runs the server without the UI
 func runServer(cmd *cobra.Command, args []string) {
+	// Initialize logger
+	if err := logger.Init(debugMode); err != nil {
+		fmt.Printf("Error initializing logger: %v\n", err)
+		os.Exit(1)
+	}
+	defer logger.Close()
+	
+	logger.Info("Starting Mockoho server")
+	
 	// Ensure config directory exists
 	if err := ensureConfigDir(); err != nil {
+		logger.Error("Failed to ensure config directory: %v", err)
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
@@ -110,6 +140,7 @@ func runServer(cmd *cobra.Command, args []string) {
 	// Create config
 	cfg := config.New(ConfigDir)
 	if err := cfg.Load(); err != nil {
+		logger.Error("Failed to load configuration: %v", err)
 		fmt.Printf("Error loading configuration: %v\n", err)
 		os.Exit(1)
 	}
@@ -120,6 +151,7 @@ func runServer(cmd *cobra.Command, args []string) {
 	// Create proxy manager
 	proxyManager, err := proxy.New(cfg)
 	if err != nil {
+		logger.Error("Failed to create proxy manager: %v", err)
 		fmt.Printf("Error creating proxy manager: %v\n", err)
 		os.Exit(1)
 	}
@@ -129,10 +161,12 @@ func runServer(cmd *cobra.Command, args []string) {
 	
 	// Start server
 	if err := srv.Start(); err != nil {
+		logger.Error("Failed to start server: %v", err)
 		fmt.Printf("Error starting server: %v\n", err)
 		os.Exit(1)
 	}
 	
+	logger.Info("Server started at %s", srv.GetAddress())
 	fmt.Printf("Server started at %s\n", srv.GetAddress())
 	fmt.Println("Press Ctrl+C to stop")
 	

@@ -5,8 +5,8 @@
       "id": "get-products",
       "method": "GET",
       "path": "/api/products",
-      "active": false,
-      "defaultResponse": "empty",
+      "active": true,
+      "defaultResponse": "standard",
       "responses": {
         "empty": {
           "status": 200,

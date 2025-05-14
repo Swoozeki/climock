@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/mockoho/mockoho/internal/logger"
 )
 
 // ProxyConfig holds the proxy server configuration
@@ -82,12 +84,14 @@ func (c *Config) Load() error {
 	// Load global config
 	globalConfigPath := filepath.Join(c.BaseDir, "config.json")
 	if err := c.loadGlobalConfig(globalConfigPath); err != nil {
+		logger.Error("Failed to load global config: %v", err)
 		return fmt.Errorf("failed to load global config: %w", err)
 	}
 
 	// Load feature configs
 	files, err := os.ReadDir(c.BaseDir)
 	if err != nil {
+		logger.Error("Failed to read mocks directory: %v", err)
 		return fmt.Errorf("failed to read mocks directory: %w", err)
 	}
 
@@ -100,6 +104,7 @@ func (c *Config) Load() error {
 		featurePath := filepath.Join(c.BaseDir, file.Name())
 		featureConfig, err := c.loadFeatureConfig(featurePath)
 		if err != nil {
+			logger.Error("Failed to load feature config %s: %v", file.Name(), err)
 			return fmt.Errorf("failed to load feature config %s: %w", file.Name(), err)
 		}
 
@@ -157,6 +162,7 @@ func (c *Config) SaveFeatureConfig(feature string) error {
 	// Ensure the directory exists
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
+		logger.Error("Failed to create directory: %v", err)
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 	
@@ -168,6 +174,7 @@ func (c *Config) SaveFeatureConfig(feature string) error {
 	// Create a temporary file in the same directory
 	tempFile := path + ".tmp"
 	if err := os.WriteFile(tempFile, data, 0644); err != nil {
+		logger.Error("Failed to write temporary file: %v", err)
 		return fmt.Errorf("failed to write temporary file: %w", err)
 	}
 	
@@ -175,8 +182,11 @@ func (c *Config) SaveFeatureConfig(feature string) error {
 	if err := os.Rename(tempFile, path); err != nil {
 		// Try to remove the temporary file
 		os.Remove(tempFile)
+		logger.Error("Failed to rename temporary file: %v", err)
 		return fmt.Errorf("failed to rename temporary file: %w", err)
 	}
+	
+	logger.Info("Saved feature config: %s", path)
 	
 	return nil
 }
@@ -310,10 +320,10 @@ func (c *Config) DeleteFeature(feature string) error {
 	path := filepath.Join(c.BaseDir, feature+".json")
 	err := os.Remove(path)
 	if err != nil && !os.IsNotExist(err) {
-		fmt.Printf("Error removing feature file %s: %v\n", path, err)
+		logger.Error("Error removing feature file %s: %v", path, err)
 		return fmt.Errorf("failed to remove feature file: %w", err)
 	}
 	
-	fmt.Printf("Feature %s deleted successfully\n", feature)
+	logger.Info("Feature %s deleted successfully", feature)
 	return nil
 }

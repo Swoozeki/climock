@@ -1,0 +1,8 @@
+[2025-05-14 08:00:49.512] INFO    (proxy.go:79) Proxy response from https://api.sandbox-koho.ca to /api/product - 404 (524.526042ms)
+[2025-05-14 08:00:45.375] INFO    (server.go:173) GET /api/products from 127.0.0.1 - 200 (250ns)
+[2025-05-14 08:00:41.219] INFO    (server.go:66) Server started at localhost:3000
+[2025-05-14 08:00:41.216] INFO    (model.go:662) User requested to start server
+[2025-05-14 08:00:31.869] INFO    (main.go:61) Starting Mockoho UI
+[2025-05-14 08:00:31.869] INFO    (logger.go:63) Logger initialized, debug mode: false
+
+

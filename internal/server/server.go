@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mockoho/mockoho/internal/config"
+	"github.com/mockoho/mockoho/internal/logger"
 	"github.com/mockoho/mockoho/internal/mock"
 	"github.com/mockoho/mockoho/internal/proxy"
 )
@@ -62,8 +63,9 @@ func (s *Server) Start() error {
 
 	// Start server in a goroutine
 	go func() {
+		logger.Info("Server started at %s", addr)
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("Error starting server: %v\n", err)
+			logger.Error("Error starting server: %v", err)
 		}
 	}()
 
@@ -77,14 +79,18 @@ func (s *Server) Stop() error {
 		return fmt.Errorf("server is not running")
 	}
 
+	logger.Info("Stopping server at %s:%d", s.Config.Global.ServerConfig.Host, s.Config.Global.ServerConfig.Port)
+	
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := s.httpServer.Shutdown(ctx); err != nil {
+		logger.Error("Error shutting down server: %v", err)
 		return err
 	}
 
 	s.isRunning = false
+	logger.Info("Server stopped")
 	return nil
 }
 
@@ -153,12 +159,18 @@ func (s *Server) handleRequest(c *gin.Context) {
 		if err := json.Unmarshal([]byte(bodyStr), &jsonBody); err == nil {
 			c.Writer.Header().Set("Content-Type", "application/json")
 			c.Writer.WriteString(bodyStr)
+			
+			// Log the request
+			logger.HTTPRequest(c.Request.Method, c.Request.URL.Path, c.ClientIP(), c.Writer.Status(), time.Since(time.Now()))
 			return
 		}
 	}
 	
 	// Otherwise, render as JSON
 	c.JSON(response.Status, response.Body)
+	
+	// Log the request
+	logger.HTTPRequest(c.Request.Method, c.Request.URL.Path, c.ClientIP(), c.Writer.Status(), time.Since(time.Now()))
 }
 
 // Reload reloads the server configuration
