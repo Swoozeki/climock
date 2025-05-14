@@ -132,9 +132,44 @@ func DefaultKeyMap() KeyMap {
 // ShortHelp returns keybindings to be shown in the mini help view
 func (k KeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
-		k.Toggle, k.Response, k.Open, k.New, 
+		k.Toggle, k.Response, k.Open, k.New,
 		k.Delete, k.Proxy, k.Server, k.Quit, k.Help,
 	}
+}
+
+// PanelKeyMap is a wrapper around KeyMap that provides panel-specific keybindings
+type PanelKeyMap struct {
+	keyMap      KeyMap
+	activePanel Panel
+}
+
+// NewPanelKeyMap creates a new PanelKeyMap
+func NewPanelKeyMap(keyMap KeyMap, activePanel Panel) PanelKeyMap {
+	return PanelKeyMap{
+		keyMap:      keyMap,
+		activePanel: activePanel,
+	}
+}
+
+// ShortHelp returns panel-specific keybindings for the mini help view
+func (pk PanelKeyMap) ShortHelp() []key.Binding {
+	// Common shortcuts for both panels
+	commonBindings := []key.Binding{
+		pk.keyMap.Open, pk.keyMap.New, pk.keyMap.Delete,
+		pk.keyMap.Server, pk.keyMap.Proxy, pk.keyMap.Quit, pk.keyMap.Help,
+	}
+	
+	// Panel-specific shortcuts
+	if pk.activePanel == FeaturesPanel {
+		return commonBindings
+	} else { // EndpointsPanel
+		return append([]key.Binding{pk.keyMap.Toggle, pk.keyMap.Response}, commonBindings...)
+	}
+}
+
+// FullHelp returns keybindings for the expanded help view
+func (pk PanelKeyMap) FullHelp() [][]key.Binding {
+	return pk.keyMap.FullHelp()
 }
 
 // FullHelp returns keybindings for the expanded help view

@@ -100,7 +100,11 @@ func (m *Model) renderFooter() string {
 	footerContentStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("240"))
 
-	return footerStyle.Render(footerContentStyle.Render(m.help.View(m.keyMap)))
+	// Create a panel-specific keymap that only shows relevant shortcuts
+	// This makes the footer more compact by only showing shortcuts for the active panel
+	panelKeyMap := NewPanelKeyMap(m.keyMap, m.activePanel)
+	
+	return footerStyle.Render(footerContentStyle.Render(m.help.View(panelKeyMap)))
 }
 
 // renderDialog renders the active dialog

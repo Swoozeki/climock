@@ -5,7 +5,7 @@
       "id": "get-products",
       "method": "GET",
       "path": "/api/products",
-      "active": true,
+      "active": false,
       "defaultResponse": "empty",
       "responses": {
         "empty": {
