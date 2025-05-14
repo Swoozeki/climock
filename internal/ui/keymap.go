@@ -173,14 +173,8 @@ func (pk PanelKeyMap) ShortHelpInRows() [][]key.Binding {
 	// Item-specific shortcuts on top row
 	row1 := []key.Binding{}
 	
-	// Panel-specific shortcuts
-	if pk.activePanel == EndpointsPanel {
-		// Endpoint-specific actions
-		row1 = append(row1, pk.keyMap.Toggle, pk.keyMap.Response)
-	}
-	
-	// Common item actions
-	row1 = append(row1, pk.keyMap.Open, pk.keyMap.New, pk.keyMap.Delete)
+	// All item-specific actions will be added by the Model
+	// when rendering based on selection state
 	
 	// General application shortcuts on bottom row
 	row2 := []key.Binding{

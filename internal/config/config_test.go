@@ -267,6 +267,15 @@ func TestEndpointManagement(t *testing.T) {
 	if len(cfg.Mocks["test"].Endpoints) != 2 {
 		t.Errorf("Expected 2 endpoints, got %d", len(cfg.Mocks["test"].Endpoints))
 	}
+	
+	// Verify that the new endpoint is inactive by default, regardless of the provided value
+	addedEndpoint, err := cfg.GetEndpoint("test", "new-endpoint")
+	if err != nil {
+		t.Fatalf("Failed to get newly added endpoint: %v", err)
+	}
+	if addedEndpoint.Active {
+		t.Error("Expected newly added endpoint to be inactive by default")
+	}
 
 	// Test AddEndpoint with duplicate ID
 	if err := cfg.AddEndpoint("test", newEndpoint); err == nil {

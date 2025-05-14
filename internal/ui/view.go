@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -106,11 +107,40 @@ func (m *Model) renderFooter() string {
 	// Get shortcuts in two rows for consistent height
 	shortcutRows := panelKeyMap.ShortHelpInRows()
 	
+	// Create a copy of the first row to add conditional shortcuts
+	row1 := make([]key.Binding, len(shortcutRows[0]))
+	copy(row1, shortcutRows[0])
+	
+	// Check if items are available for selection
+	hasFeatures := len(m.featuresList.Items()) > 0
+	hasEndpoints := m.selectedFeature != "" && len(m.endpointsList.Items()) > 0
+	
+	// Add New option conditionally
+	if m.activePanel == FeaturesPanel {
+		// Always show New in features panel
+		row1 = append(row1, m.keyMap.New)
+	} else if m.activePanel == EndpointsPanel && m.selectedFeature != "" {
+		// Only show New in endpoints panel if a feature is selected
+		row1 = append(row1, m.keyMap.New)
+	}
+	
+	// Add panel-specific actions
+	if m.activePanel == EndpointsPanel && hasEndpoints {
+		// Only show toggle and response options if endpoints are available
+		row1 = append(row1, m.keyMap.Toggle, m.keyMap.Response)
+	}
+	
+	// Add Open and Delete options based on selection state
+	if (m.activePanel == FeaturesPanel && hasFeatures) ||
+	   (m.activePanel == EndpointsPanel && hasEndpoints) {
+		row1 = append(row1, m.keyMap.Open, m.keyMap.Delete)
+	}
+	
 	// Render each row of shortcuts
 	var sb strings.Builder
 	
 	// First row
-	for i, binding := range shortcutRows[0] {
+	for i, binding := range row1 {
 		if i > 0 {
 			sb.WriteString("  ")
 		}

@@ -280,6 +280,9 @@ func (c *Config) AddEndpoint(feature string, endpoint Endpoint) error {
 		}
 	}
 
+	// Ensure new endpoints are inactive by default
+	endpoint.Active = false
+
 	featureConfig.Endpoints = append(featureConfig.Endpoints, endpoint)
 	c.Mocks[feature] = featureConfig
 	return nil

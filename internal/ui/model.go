@@ -517,16 +517,25 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case key.Matches(msg, m.keyMap.New):
 			if m.activePanel == FeaturesPanel {
+				// Always allow creating new features in the features panel
 				m.showNewFeatureDialog()
-			} else if len(m.selectedFeature) > 0 {
+			} else if m.activePanel == EndpointsPanel && m.selectedFeature != "" {
+				// Only allow creating new endpoints if a feature is selected
 				m.showNewEndpointDialog()
-			} else {
-				// Can't create endpoint without a selected feature
-				return m, nil
 			}
 			return m, nil
 		case key.Matches(msg, m.keyMap.Delete):
-			m.showDeleteConfirmDialog()
+			// Only show delete dialog if there's something to delete
+			hasSelection := false
+			if m.activePanel == FeaturesPanel {
+				hasSelection = len(m.featuresList.Items()) > 0
+			} else { // EndpointsPanel
+				hasSelection = m.selectedFeature != "" && len(m.endpointsList.Items()) > 0
+			}
+			
+			if hasSelection {
+				m.showDeleteConfirmDialog()
+			}
 			return m, nil
 		case key.Matches(msg, m.keyMap.Proxy):
 			m.showProxyConfigDialog()
@@ -536,15 +545,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Reload):
 			return m, m.reloadConfig
 		case key.Matches(msg, m.keyMap.Toggle):
-			if m.activePanel == EndpointsPanel {
+			// Only toggle if we're in the endpoints panel and there are endpoints
+			if m.activePanel == EndpointsPanel && m.selectedFeature != "" && len(m.endpointsList.Items()) > 0 {
 				return m, m.toggleEndpoint()
 			}
 		case key.Matches(msg, m.keyMap.Response):
-			if m.activePanel == EndpointsPanel {
+			// Only cycle response if we're in the endpoints panel and there are endpoints
+			if m.activePanel == EndpointsPanel && m.selectedFeature != "" && len(m.endpointsList.Items()) > 0 {
 				return m, m.cycleResponse()
 			}
 		case key.Matches(msg, m.keyMap.Open):
-			return m, m.openInEditor
+			// Only try to open if there's something to open
+			hasSelection := false
+			if m.activePanel == FeaturesPanel {
+				hasSelection = len(m.featuresList.Items()) > 0
+			} else { // EndpointsPanel
+				hasSelection = m.selectedFeature != "" && len(m.endpointsList.Items()) > 0
+			}
+			
+			if hasSelection {
+				return m, m.openInEditor
+			}
+			return m, nil
 		}
 	}
 
@@ -614,7 +636,8 @@ func (m *Model) reloadConfig() tea.Msg {
 // toggleEndpoint toggles the selected endpoint
 func (m *Model) toggleEndpoint() tea.Cmd {
 	return func() tea.Msg {
-		if m.activePanel != EndpointsPanel {
+		// Check if we're in the endpoints panel and have endpoints
+		if m.activePanel != EndpointsPanel || m.selectedFeature == "" || len(m.endpointsList.Items()) == 0 {
 			return nil
 		}
 		
@@ -645,7 +668,8 @@ func (m *Model) toggleEndpoint() tea.Cmd {
 // cycleResponse cycles through the available responses for the selected endpoint
 func (m *Model) cycleResponse() tea.Cmd {
 	return func() tea.Msg {
-		if m.activePanel != EndpointsPanel {
+		// Check if we're in the endpoints panel and have endpoints
+		if m.activePanel != EndpointsPanel || m.selectedFeature == "" || len(m.endpointsList.Items()) == 0 {
 			return nil
 		}
 		
@@ -711,7 +735,12 @@ func (m *Model) openInEditor() tea.Msg {
 	var filePath string
 	var line int
 	
+	// Check if there are items to select from
 	if m.activePanel == FeaturesPanel {
+		if len(m.featuresList.Items()) == 0 {
+			return nil // No features available, silently do nothing
+		}
+		
 		item, ok := m.featuresList.SelectedItem().(featureItem)
 		if !ok {
 			return fmt.Errorf("no feature selected")
@@ -720,6 +749,10 @@ func (m *Model) openInEditor() tea.Msg {
 		filePath = fmt.Sprintf("%s/%s.json", m.Config.BaseDir, item.name)
 		line = 1
 	} else {
+		if m.selectedFeature == "" || len(m.endpointsList.Items()) == 0 {
+			return nil // No endpoints available, silently do nothing
+		}
+		
 		endpoint, ok := m.endpointsList.SelectedItem().(endpointItem)
 		if !ok {
 			return fmt.Errorf("no endpoint selected")

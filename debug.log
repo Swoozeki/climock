@@ -1,137 +1,100 @@
-[2025-05-14 15:53:57.960] INFO    (logger.go:230) Logger shutting down
-[2025-05-14 15:53:57.960] INFO    (logger.go:230) UI closed
-[2025-05-14 15:53:49.849] INFO    (logger.go:230) Feature users deleted successfully
-[2025-05-14 15:53:49.849] INFO    (logger.go:230) Feature users deleted successfully
-[2025-05-14 15:53:49.847] INFO    (logger.go:230) Deleting feature users
-[2025-05-14 15:53:41.028] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/products.json
-[2025-05-14 15:53:41.028] INFO    (logger.go:230) Toggled endpoint get-products in feature products to true
-[2025-05-14 15:53:39.764] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/products.json
-[2025-05-14 15:53:39.762] INFO    (logger.go:230) Toggled endpoint get-products in feature products to false
-[2025-05-14 15:53:35.315] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/products.json
-[2025-05-14 15:53:35.314] INFO    (logger.go:230) Toggled endpoint get-products in feature products to true
-[2025-05-14 15:53:31.938] INFO    (logger.go:230) Proxy target updated to: https://api.sandbox-koho.ca
-[2025-05-14 15:53:31.938] DEBUG   (logger.go:225) Global config saved to /Users/sujit/Desktop/mockoho/mocks/config.json
-[2025-05-14 15:53:24.293] INFO    (logger.go:230) Proxy target updated to: https://api.sandbox.ca
-[2025-05-14 15:53:24.293] DEBUG   (logger.go:225) Global config saved to /Users/sujit/Desktop/mockoho/mocks/config.json
-[2025-05-14 15:53:19.837] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/products.json
-[2025-05-14 15:53:19.835] INFO    (logger.go:230) Toggled endpoint get-products in feature products to false
-[2025-05-14 15:53:10.226] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/products.json
-[2025-05-14 15:53:10.225] INFO    (logger.go:230) Toggled endpoint get-products in feature products to true
-[2025-05-14 15:53:09.077] INFO    (logger.go:230) Server started at localhost:3000
-[2025-05-14 15:53:09.077] INFO    (logger.go:230) User requested to start server
-[2025-05-14 15:52:58.411] INFO    (logger.go:230) Server stopped
-[2025-05-14 15:52:58.411] INFO    (logger.go:230) Stopping server at localhost:3000
-[2025-05-14 15:52:58.411] INFO    (logger.go:230) User requested to stop server
-[2025-05-14 15:52:54.108] INFO    (logger.go:230) GET /1.0/collections/payment-reminders - proxied - 200 (1.003888083s)
-[2025-05-14 15:52:53.341] INFO    (logger.go:230) GET /1.0/users/referrals/rewards - proxied - 200 (249.306916ms)
-[2025-05-14 15:52:53.301] INFO    (logger.go:230) GET /credit/1.0/underwriting/lineofcredit/user - proxied - 404 (117.854125ms)
-[2025-05-14 15:52:53.269] INFO    (logger.go:230) GET /2.0/users/personalized-onboarding - proxied - 200 (163.989541ms)
-[2025-05-14 15:52:53.245] INFO    (logger.go:230) GET /1.0/benefit-groups - proxied - 200 (161.136458ms)
-[2025-05-14 15:52:53.232] INFO    (logger.go:230) GET /risk-domain/fraud/disputes/v1/claims - proxied - 200 (127.944542ms)
-[2025-05-14 15:52:53.181] INFO    (logger.go:230) GET /risk-domain/kyc/core/v1/status - proxied - 405 (126.490041ms)
-[2025-05-14 15:52:53.103] INFO    (logger.go:230) GET /1.0/accounts/cards-info/design-option - proxied - 200 (124.373875ms)
-[2025-05-14 15:52:53.099] INFO    (logger.go:230) GET /2.0/credit/scores/users - proxied - 200 (127.157958ms)
-[2025-05-14 15:52:53.099] INFO    (logger.go:230) GET /1.0/user/past_transactions - proxied - 200 (205.116666ms)
-[2025-05-14 15:52:53.091] INFO    (logger.go:230) GET /1.0/tiers/current - proxied - 500 (125.959417ms)
-[2025-05-14 15:52:53.083] INFO    (logger.go:230) GET /1.0/user/rewards - proxied - 200 (119.983959ms)
-[2025-05-14 15:52:53.051] INFO    (logger.go:230) GET /2.0/overdraft - proxied - 200 (188.110542ms)
-[2025-05-14 15:52:52.976] INFO    (logger.go:230) GET /2.0/users/affiliates - proxied - 200 (120.493917ms)
-[2025-05-14 15:52:52.967] INFO    (logger.go:230) GET /credit/1.0/rent-reporting/short-status - proxied - 404 (122.066ms)
-[2025-05-14 15:52:52.239] INFO    (logger.go:230) GET /2.0/loans - proxied - 200 (488.741292ms)
-[2025-05-14 15:52:52.124] INFO    (logger.go:230) GET /2.0/overdraft - proxied - 200 (448.432417ms)
-[2025-05-14 15:52:52.086] INFO    (logger.go:230) GET /1.0/tiers/current - proxied - 500 (129.538083ms)
-[2025-05-14 15:52:51.931] INFO    (logger.go:230) POST /1.0/user/device/register - proxied - 200 (131.447167ms)
-[2025-05-14 15:52:51.928] INFO    (logger.go:230) POST /1.0/fingerprints - proxied - 201 (128.770167ms)
-[2025-05-14 15:52:51.890] INFO    (logger.go:230) GET /credit/1.0/transactioninstalment/account-groups/loans - proxied - 404 (122.56875ms)
-[2025-05-14 15:52:51.820] INFO    (logger.go:230) GET /1.0/accounts/hisa - proxied - 200 (121.605833ms)
-[2025-05-14 15:52:51.799] INFO    (logger.go:230) GET /credit/1.0/underwriting/transactioninstalment/user - mocked - 200 (209ns)
-[2025-05-14 15:52:51.550] INFO    (logger.go:230) GET /1.0/user/context - proxied - 200 (163.887ms)
-[2025-05-14 15:52:51.359] INFO    (logger.go:230) GET /1.0/user/profile - proxied - 200 (185.056708ms)
-[2025-05-14 15:52:51.148] INFO    (logger.go:230) GET /1.0/context - proxied - 200 (194.474208ms)
-[2025-05-14 15:52:20.204] INFO    (logger.go:230) GET /1.0/collections/payment-reminders - proxied - 200 (1.016963667s)
-[2025-05-14 15:52:19.384] INFO    (logger.go:230) GET /1.0/users/referrals/rewards - proxied - 200 (263.976083ms)
-[2025-05-14 15:52:19.384] INFO    (logger.go:230) GET /2.0/users/personalized-onboarding - proxied - 200 (161.43625ms)
-[2025-05-14 15:52:19.381] INFO    (logger.go:230) GET /credit/1.0/underwriting/lineofcredit/user - proxied - 404 (172.040125ms)
-[2025-05-14 15:52:19.309] INFO    (logger.go:230) GET /risk-domain/fraud/disputes/v1/claims - proxied - 200 (148.549208ms)
-[2025-05-14 15:52:19.257] INFO    (logger.go:230) GET /1.0/benefit-groups - proxied - 200 (185.760209ms)
-[2025-05-14 15:52:19.219] INFO    (logger.go:230) GET /risk-domain/kyc/core/v1/status - proxied - 405 (154.631125ms)
-[2025-05-14 15:52:19.208] INFO    (logger.go:230) GET /1.0/accounts/cards-info/design-option - proxied - 200 (157.042958ms)
-[2025-05-14 15:52:19.186] INFO    (logger.go:230) GET /2.0/credit/scores/users - proxied - 200 (143.571416ms)
-[2025-05-14 15:52:19.140] INFO    (logger.go:230) GET /1.0/user/past_transactions - proxied - 200 (229.331417ms)
-[2025-05-14 15:52:19.107] INFO    (logger.go:230) GET /2.0/overdraft - proxied - 200 (209.578334ms)
-[2025-05-14 15:52:19.069] INFO    (logger.go:230) GET /1.0/tiers/current - proxied - 500 (124.853167ms)
-[2025-05-14 15:52:19.063] INFO    (logger.go:230) GET /1.0/user/rewards - proxied - 200 (119.549083ms)
-[2025-05-14 15:52:19.050] INFO    (logger.go:230) GET /credit/1.0/rent-reporting/short-status - proxied - 404 (155.537458ms)
-[2025-05-14 15:52:19.039] INFO    (logger.go:230) GET /2.0/users/affiliates - proxied - 200 (143.196458ms)
-[2025-05-14 15:52:18.164] INFO    (logger.go:230) GET /2.0/loans - proxied - 200 (406.798291ms)
-[2025-05-14 15:52:18.082] INFO    (logger.go:230) GET /1.0/tiers/current - proxied - 500 (129.297791ms)
-[2025-05-14 15:52:18.020] INFO    (logger.go:230) GET /2.0/overdraft - proxied - 200 (282.440167ms)
-[2025-05-14 15:52:17.923] INFO    (logger.go:230) POST /1.0/fingerprints - proxied - 201 (131.001333ms)
-[2025-05-14 15:52:17.915] INFO    (logger.go:230) POST /1.0/user/device/register - proxied - 200 (122.5115ms)
-[2025-05-14 15:52:17.892] INFO    (logger.go:230) GET /credit/1.0/transactioninstalment/account-groups/loans - proxied - 404 (125.046458ms)
-[2025-05-14 15:52:17.874] INFO    (logger.go:230) GET /1.0/accounts/hisa - proxied - 200 (124.917708ms)
-[2025-05-14 15:52:17.781] INFO    (logger.go:230) GET /credit/1.0/underwriting/transactioninstalment/user - mocked - 200 (125ns)
-[2025-05-14 15:52:17.527] INFO    (logger.go:230) GET /1.0/user/context - proxied - 200 (172.7625ms)
-[2025-05-14 15:52:17.319] INFO    (logger.go:230) GET /1.0/user/profile - proxied - 200 (172.336167ms)
-[2025-05-14 15:52:17.115] INFO    (logger.go:230) GET /1.0/context - proxied - 200 (127.1715ms)
-[2025-05-14 15:52:07.434] INFO    (logger.go:230) GET /1.0/collections/payment-reminders - proxied - 200 (1.135775625s)
-[2025-05-14 15:52:06.614] INFO    (logger.go:230) GET /1.0/users/referrals/rewards - proxied - 200 (258.932458ms)
-[2025-05-14 15:52:06.489] INFO    (logger.go:230) GET /2.0/users/personalized-onboarding - proxied - 200 (165.192834ms)
-[2025-05-14 15:52:06.445] INFO    (logger.go:230) GET /risk-domain/fraud/disputes/v1/claims - proxied - 200 (120.552708ms)
-[2025-05-14 15:52:06.437] INFO    (logger.go:230) GET /credit/1.0/underwriting/lineofcredit/user - proxied - 404 (129.516083ms)
-[2025-05-14 15:52:06.390] INFO    (logger.go:230) GET /1.0/benefit-groups - proxied - 200 (157.363459ms)
-[2025-05-14 15:52:06.355] INFO    (logger.go:230) GET /risk-domain/kyc/core/v1/status - proxied - 405 (127.80225ms)
-[2025-05-14 15:52:06.323] INFO    (logger.go:230) GET /1.0/accounts/cards-info/design-option - proxied - 200 (124.15825ms)
-[2025-05-14 15:52:06.323] INFO    (logger.go:230) GET /2.0/credit/scores/users - proxied - 200 (130.921166ms)
-[2025-05-14 15:52:06.301] INFO    (logger.go:230) GET /2.0/overdraft - proxied - 200 (231.478292ms)
-[2025-05-14 15:52:06.291] INFO    (logger.go:230) GET /1.0/user/past_transactions - proxied - 200 (217.034125ms)
-[2025-05-14 15:52:06.232] INFO    (logger.go:230) GET /1.0/tiers/current - proxied - 500 (131.575791ms)
-[2025-05-14 15:52:06.225] INFO    (logger.go:230) GET /1.0/user/rewards - proxied - 200 (127.951542ms)
-[2025-05-14 15:52:06.198] INFO    (logger.go:230) GET /2.0/users/affiliates - proxied - 200 (125.457084ms)
-[2025-05-14 15:52:06.191] INFO    (logger.go:230) GET /credit/1.0/rent-reporting/short-status - proxied - 404 (125.978458ms)
-[2025-05-14 15:52:05.757] INFO    (logger.go:230) GET /2.0/loans - proxied - 200 (441.727459ms)
-[2025-05-14 15:52:05.631] INFO    (logger.go:230) GET /1.0/tiers/current - proxied - 500 (143.749ms)
-[2025-05-14 15:52:05.579] INFO    (logger.go:230) GET /2.0/overdraft - proxied - 200 (267.423041ms)
-[2025-05-14 15:52:05.463] INFO    (logger.go:230) GET /credit/1.0/transactioninstalment/account-groups/loans - proxied - 404 (139.873875ms)
-[2025-05-14 15:52:05.462] INFO    (logger.go:230) POST /1.0/user/device/register - proxied - 200 (142.71325ms)
-[2025-05-14 15:52:05.460] INFO    (logger.go:230) POST /1.0/fingerprints - proxied - 201 (142.860042ms)
-[2025-05-14 15:52:05.457] INFO    (logger.go:230) GET /1.0/accounts/hisa - proxied - 200 (149.152541ms)
-[2025-05-14 15:52:05.316] INFO    (logger.go:230) GET /credit/1.0/underwriting/transactioninstalment/user - mocked - 200 (209ns)
-[2025-05-14 15:52:05.242] INFO    (logger.go:230) GET /1.0/user/context - proxied - 200 (155.857834ms)
-[2025-05-14 15:52:05.050] INFO    (logger.go:230) GET /1.0/user/profile - proxied - 200 (367.313042ms)
-[2025-05-14 15:52:04.628] INFO    (logger.go:230) GET /1.0/context - proxied - 200 (256.625667ms)
-[2025-05-14 15:51:50.015] INFO    (logger.go:230) GET /1.0/tiers/current - proxied - 500 (142.960125ms)
-[2025-05-14 15:51:49.950] INFO    (logger.go:230) GET /2.0/loans - proxied - 200 (502.442417ms)
-[2025-05-14 15:51:49.829] INFO    (logger.go:230) POST /1.0/fingerprints - proxied - 201 (339.592125ms)
-[2025-05-14 15:51:49.829] INFO    (logger.go:230) POST /1.0/user/device/register - proxied - 200 (339.262791ms)
-[2025-05-14 15:51:49.829] INFO    (logger.go:230) GET /credit/1.0/transactioninstalment/account-groups/loans - proxied - 404 (344.073417ms)
-[2025-05-14 15:51:49.754] INFO    (logger.go:230) GET /1.0/accounts/hisa - proxied - 200 (318.507667ms)
-[2025-05-14 15:51:49.624] INFO    (logger.go:230) GET /2.0/overdraft - proxied - 200 (206.084167ms)
-[2025-05-14 15:51:49.487] INFO    (logger.go:230) GET /credit/1.0/underwriting/transactioninstalment/user - mocked - 200 (167ns)
-[2025-05-14 15:51:49.294] INFO    (logger.go:230) GET /1.0/user/context - proxied - 200 (170.806ms)
-[2025-05-14 15:51:49.094] INFO    (logger.go:230) GET /1.0/user/profile - proxied - 200 (215.380125ms)
-[2025-05-14 15:51:48.838] INFO    (logger.go:230) GET /1.0/context - proxied - 200 (641.371041ms)
-[2025-05-14 15:51:47.941] INFO    (logger.go:230) Server started at localhost:3000
-[2025-05-14 15:51:47.940] INFO    (logger.go:230) User requested to start server
-[2025-05-14 15:51:36.941] INFO    (logger.go:230) Starting Mockoho UI
-[2025-05-14 15:51:36.940] INFO    (logger.go:230) Logger initialized, debug mode: true
+[2025-05-14 16:39:59.378] INFO    (logger.go:230) Logger shutting down
+[2025-05-14 16:39:59.377] INFO    (logger.go:230) UI closed
+[2025-05-14 16:39:55.625] INFO    (logger.go:230) Feature foo deleted successfully
+[2025-05-14 16:39:55.625] INFO    (logger.go:230) Feature foo deleted successfully
+[2025-05-14 16:39:55.625] INFO    (logger.go:230) Deleting feature foo
+[2025-05-14 16:39:54.168] INFO    (logger.go:230) Endpoint get-foo deleted successfully from feature foo
+[2025-05-14 16:39:54.168] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:39:54.166] INFO    (logger.go:230) Deleting endpoint get-foo from feature foo
+[2025-05-14 16:39:51.806] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:39:51.805] INFO    (logger.go:230) Toggled endpoint get-foo in feature foo to false
+[2025-05-14 16:39:51.132] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:39:51.128] INFO    (logger.go:230) Toggled endpoint get-foo in feature foo to true
+[2025-05-14 16:39:49.262] INFO    (logger.go:230) Endpoint get-foo created successfully in feature foo
+[2025-05-14 16:39:49.262] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:39:49.261] INFO    (logger.go:230) Creating endpoint get-foo in feature foo
+[2025-05-14 16:39:42.244] INFO    (logger.go:230) Feature foo created successfully
+[2025-05-14 16:39:42.244] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:39:42.243] INFO    (logger.go:230) Creating feature foo
+[2025-05-14 16:39:37.286] INFO    (logger.go:230) Starting Mockoho UI
+[2025-05-14 16:39:37.285] INFO    (logger.go:230) Logger initialized, debug mode: true
 
 
 ==================================================
-=== NEW SESSION STARTED AT 2025-05-14 15:51:36 ===
+=== NEW SESSION STARTED AT 2025-05-14 16:39:37 ===
 ==================================================
 
 
-[2025-05-14 15:51:17.920] INFO    (logger.go:230) Logger shutting down
-[2025-05-14 15:51:17.920] INFO    (logger.go:230) UI closed
-[2025-05-14 15:51:13.030] INFO    (logger.go:230) Server started at localhost:3000
-[2025-05-14 15:51:13.030] INFO    (logger.go:230) User requested to start server
-[2025-05-14 15:51:06.825] INFO    (logger.go:230) Starting Mockoho UI
-[2025-05-14 15:51:06.824] INFO    (logger.go:230) Logger initialized, debug mode: true
+[2025-05-14 16:38:47.667] INFO    (logger.go:230) Logger shutting down
+[2025-05-14 16:38:47.667] INFO    (logger.go:230) UI closed
+[2025-05-14 16:24:13.308] INFO    (logger.go:230) Feature foo deleted successfully
+[2025-05-14 16:24:13.307] INFO    (logger.go:230) Feature foo deleted successfully
+[2025-05-14 16:24:13.306] INFO    (logger.go:230) Deleting feature foo
+[2025-05-14 16:24:10.137] INFO    (logger.go:230) Endpoint get-foo deleted successfully from feature foo
+[2025-05-14 16:24:10.137] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:24:10.136] INFO    (logger.go:230) Deleting endpoint get-foo from feature foo
+[2025-05-14 16:24:07.710] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:24:07.708] INFO    (logger.go:230) Set default response for endpoint get-foo in feature foo to default
+[2025-05-14 16:24:07.440] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:24:07.439] INFO    (logger.go:230) Set default response for endpoint get-foo in feature foo to default
+[2025-05-14 16:24:07.188] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:24:07.186] INFO    (logger.go:230) Set default response for endpoint get-foo in feature foo to default
+[2025-05-14 16:24:06.967] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:24:06.966] INFO    (logger.go:230) Set default response for endpoint get-foo in feature foo to default
+[2025-05-14 16:24:06.718] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:24:06.716] INFO    (logger.go:230) Set default response for endpoint get-foo in feature foo to default
+[2025-05-14 16:23:59.585] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:23:59.584] INFO    (logger.go:230) Toggled endpoint get-foo in feature foo to false
+[2025-05-14 16:23:53.936] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:23:53.935] INFO    (logger.go:230) Toggled endpoint get-foo in feature foo to true
+[2025-05-14 16:23:52.905] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:23:52.901] INFO    (logger.go:230) Toggled endpoint get-foo in feature foo to false
+[2025-05-14 16:23:50.250] INFO    (logger.go:230) Endpoint get-foo created successfully in feature foo
+[2025-05-14 16:23:50.250] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:23:50.248] INFO    (logger.go:230) Creating endpoint get-foo in feature foo
+[2025-05-14 16:23:27.703] INFO    (logger.go:230) Feature foo created successfully
+[2025-05-14 16:23:27.703] INFO    (logger.go:230) Saved feature config: /Users/sujit/Desktop/mockoho/mocks/foo.json
+[2025-05-14 16:23:27.701] INFO    (logger.go:230) Creating feature foo
+[2025-05-14 16:23:18.806] INFO    (logger.go:230) Starting Mockoho UI
+[2025-05-14 16:23:18.806] INFO    (logger.go:230) Logger initialized, debug mode: true
 
 
 ==================================================
-=== NEW SESSION STARTED AT 2025-05-14 15:51:06 ===
+=== NEW SESSION STARTED AT 2025-05-14 16:23:18 ===
+==================================================
+
+
+[2025-05-14 16:23:16.012] INFO    (logger.go:230) Logger shutting down
+[2025-05-14 16:23:16.012] INFO    (logger.go:230) UI closed
+[2025-05-14 16:22:20.675] DEBUG   (logger.go:225) Proxy configuration cancelled
+[2025-05-14 16:20:59.894] INFO    (logger.go:230) Starting Mockoho UI
+[2025-05-14 16:20:59.893] INFO    (logger.go:230) Logger initialized, debug mode: true
+
+
+==================================================
+=== NEW SESSION STARTED AT 2025-05-14 16:20:59 ===
+==================================================
+
+
+[2025-05-14 16:20:57.027] INFO    (logger.go:230) Logger shutting down
+[2025-05-14 16:20:57.027] INFO    (logger.go:230) UI closed
+[2025-05-14 16:18:29.042] INFO    (logger.go:230) Starting Mockoho UI
+[2025-05-14 16:18:29.041] INFO    (logger.go:230) Logger initialized, debug mode: true
+
+
+==================================================
+=== NEW SESSION STARTED AT 2025-05-14 16:18:29 ===
+==================================================
+
+
+[2025-05-14 16:18:24.816] INFO    (logger.go:230) Logger shutting down
+[2025-05-14 16:18:24.816] INFO    (logger.go:230) UI closed
+[2025-05-14 16:08:34.305] INFO    (logger.go:230) Starting Mockoho UI
+[2025-05-14 16:08:34.303] INFO    (logger.go:230) Logger initialized, debug mode: true
+
+
+==================================================
+=== NEW SESSION STARTED AT 2025-05-14 16:08:34 ===
 ==================================================
 
 

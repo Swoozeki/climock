@@ -244,26 +244,35 @@ func (m *Model) showDeleteConfirmDialog() {
 	var itemType string
 	var confirmFn func() func() tea.Msg
 	
+	// Check if there are items to select from
+	hasItems := false
+	
 	if m.activePanel == FeaturesPanel {
-		if i, ok := m.featuresList.SelectedItem().(featureItem); ok {
-			item = i.name
-			itemType = "feature"
-			confirmFn = func() func() tea.Msg {
-				return m.deleteFeature
+		hasItems = len(m.featuresList.Items()) > 0
+		if hasItems {
+			if i, ok := m.featuresList.SelectedItem().(featureItem); ok {
+				item = i.name
+				itemType = "feature"
+				confirmFn = func() func() tea.Msg {
+					return m.deleteFeature
+				}
 			}
 		}
 	} else {
-		if i, ok := m.endpointsList.SelectedItem().(endpointItem); ok {
-			item = i.id
-			itemType = "endpoint"
-			confirmFn = func() func() tea.Msg {
-				return m.deleteEndpoint
+		hasItems = m.selectedFeature != "" && len(m.endpointsList.Items()) > 0
+		if hasItems {
+			if i, ok := m.endpointsList.SelectedItem().(endpointItem); ok {
+				item = i.id
+				itemType = "endpoint"
+				confirmFn = func() func() tea.Msg {
+					return m.deleteEndpoint
+				}
 			}
 		}
 	}
 	
-	if item == "" {
-		// Nothing selected, don't show dialog
+	if item == "" || !hasItems {
+		// Nothing selected or no items available, don't show dialog
 		return
 	}
 	
