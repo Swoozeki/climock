@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mockoho/mockoho/internal/config"
 	"github.com/mockoho/mockoho/internal/logger"
+	"github.com/mockoho/mockoho/internal/middleware"
 )
 
 // Manager handles proxying requests to the real server
@@ -64,22 +65,10 @@ func createReverseProxy(targetURL *url.URL, cfg *config.Config) *httputil.Revers
 	// to prevent duplicate headers when our middleware adds them
 	originalModifyResponse := proxy.ModifyResponse
 	proxy.ModifyResponse = func(resp *http.Response) error {
-		// Log all headers from the server response for debugging
-		if logger.IsDebugMode {
-			logger.LogDebug("Headers in ModifyResponse (before modification):")
-			for key, values := range resp.Header {
-				for _, value := range values {
-					logger.LogDebug("  %s: %s", key, value)
-				}
-			}
-		}
-		
 		// Remove any existing CORS headers to prevent duplicates
-		resp.Header.Del("Access-Control-Allow-Origin")
-		resp.Header.Del("Access-Control-Allow-Methods")
-		resp.Header.Del("Access-Control-Allow-Headers")
-		resp.Header.Del("Access-Control-Allow-Credentials")
-		resp.Header.Del("Access-Control-Expose-Headers")
+		for header := range middleware.CORSHeaders {
+			resp.Header.Del(header)
+		}
 		
 		// Call the original modifier if it exists
 		if originalModifyResponse != nil {
@@ -92,7 +81,6 @@ func createReverseProxy(targetURL *url.URL, cfg *config.Config) *httputil.Revers
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		// Special handling for aborted requests (like WebSockets)
 		if err == http.ErrAbortHandler {
-			logger.LogDebug("HTTP connection closed by client or hijacked (normal for WebSockets)")
 			return
 		}
 		
@@ -126,76 +114,21 @@ func (m *Manager) Handle(c *gin.Context) {
 		if err := recover(); err != nil {
 			// Check if it's the special ErrAbortHandler which is expected in some cases
 			if err == http.ErrAbortHandler {
-				logger.LogDebug("HTTP connection closed by client or hijacked (normal for WebSockets)")
+				// Normal for WebSockets, no need to log
 			} else {
 				// Re-panic for other errors
 				panic(err)
 			}
 		}
 		
-		
 		// Only log if a response was actually written
 		if responseRecorder.written {
-			// Log the proxied request
-			logger.Info("Proxy response from %s to %s - %d (%s)",
-				m.Config.Global.ProxyConfig.Target,
+			// Log the proxied request with method, path and status
+			logger.Info("%s %s - proxied - %d (%s)",
+				c.Request.Method,
 				c.Request.URL.Path,
 				responseRecorder.statusCode,
 				time.Since(start))
-			
-			// Log the response body in debug mode
-			if logger.IsDebugMode {
-				// Check content type to handle binary data appropriately
-				contentType := responseRecorder.Header().Get("Content-Type")
-				bodySize := len(responseRecorder.body)
-				maxLogSize := 4096 // Limit log size to 4KB
-				
-				// Log the content type for debugging
-				logger.LogDebug("Proxy response from %s has Content-Type: %s",
-					m.Config.Global.ProxyConfig.Target,
-					contentType)
-				
-				if bodySize > 0 {
-					// Determine if this is likely binary data by checking both content type and content
-					isBinary := isBinaryContent(contentType, responseRecorder.body)
-					
-					if isBinary {
-						// For binary data, just log the content type and size
-						logger.LogDebug("Proxy response body from %s: [Binary data of type %s, %d bytes]",
-							m.Config.Global.ProxyConfig.Target,
-							contentType,
-							bodySize)
-						
-						// Log first few bytes as hex for debugging
-						maxHexBytes := 32
-						if bodySize < maxHexBytes {
-							maxHexBytes = bodySize
-						}
-						hexStr := ""
-						for i := 0; i < maxHexBytes; i++ {
-							hexStr += fmt.Sprintf("%02x ", responseRecorder.body[i])
-						}
-						logger.LogDebug("First %d bytes (hex): %s", maxHexBytes, hexStr)
-					} else {
-						// For text data, log the actual content (with truncation if needed)
-						if bodySize <= maxLogSize {
-							logger.LogDebug("Proxy response body from %s (%s):\n%s",
-								m.Config.Global.ProxyConfig.Target,
-								contentType,
-								string(responseRecorder.body))
-						} else {
-							// Truncate and indicate truncation
-							logger.LogDebug("Proxy response body from %s (%s, truncated, %d bytes total):\n%s...",
-								m.Config.Global.ProxyConfig.Target,
-								contentType,
-								bodySize,
-								string(responseRecorder.body[:maxLogSize]))
-						}
-					}
-				} else {
-					logger.LogDebug("Proxy response from %s had empty body", m.Config.Global.ProxyConfig.Target)
-				}
-			}
 		}
 	}()
 	
@@ -238,27 +171,11 @@ func (r *responseRecorder) WriteHeader(statusCode int) {
 		}
 	}
 	
-	// Log headers for debugging
-	if logger.IsDebugMode {
-		logger.LogDebug("Sending headers to client:")
-		for key, values := range r.ResponseWriter.Header() {
-			for _, value := range values {
-				logger.LogDebug("  %s: %s", key, value)
-			}
-		}
-	}
-	
 	r.ResponseWriter.WriteHeader(statusCode)
 }
 
 // Write captures that the response has been written and stores the response body
 func (r *responseRecorder) Write(b []byte) (int, error) {
-	r.written = true
-	// Store a copy of the response body (up to a reasonable size limit)
-	if len(r.body) < 1024*1024 { // Limit to 1MB to prevent memory issues
-		r.body = append(r.body, b...)
-	}
-	
 	// Ensure headers are copied before writing the body if WriteHeader wasn't called
 	if !r.written {
 		// Copy all headers from our custom headers to the underlying ResponseWriter
@@ -267,6 +184,12 @@ func (r *responseRecorder) Write(b []byte) (int, error) {
 				r.ResponseWriter.Header().Set(key, value)
 			}
 		}
+		r.written = true
+	}
+	
+	// Store a copy of the response body (up to a reasonable size limit)
+	if len(r.body) < 1024*1024 { // Limit to 1MB to prevent memory issues
+		r.body = append(r.body, b...)
 	}
 	
 	return r.ResponseWriter.Write(b)
@@ -288,6 +211,8 @@ func (r *responseRecorder) Flush() {
 }
 
 // CloseNotify implements the http.CloseNotifier interface
+// NOTE: This is deprecated in newer Go versions and should be replaced with context cancellation
+// Kept for backward compatibility with older Go versions
 func (r *responseRecorder) CloseNotify() <-chan bool {
 	if closeNotifier, ok := r.ResponseWriter.(http.CloseNotifier); ok {
 		return closeNotifier.CloseNotify()
@@ -305,9 +230,6 @@ func (r *responseRecorder) Push(target string, opts *http.PushOptions) error {
 
 // UpdateTarget updates the proxy target
 func (m *Manager) UpdateTarget(target string) error {
-	// Only log at debug level for detailed operations
-	logger.LogDebug("Updating proxy target to: %s", target)
-	
 	targetURL, err := url.Parse(target)
 	if err != nil {
 		logger.Error("Failed to parse target URL: %v", err)
@@ -359,84 +281,6 @@ func (m *Manager) SetChangeOrigin(changeOrigin bool) error {
 	return m.Config.SaveGlobalConfig()
 }
 
-// isBinaryContent determines if a content type or content represents binary data
-func isBinaryContent(contentType string, content []byte) bool {
-	// First check by content type
-	if contentType != "" {
-		// List of common binary content types
-		binaryTypes := []string{
-			"application/octet-stream",
-			"application/pdf",
-			"application/zip",
-			"application/gzip",
-			"application/x-gzip",
-			"application/x-compressed",
-			"application/x-zip-compressed",
-			"image/",
-			"audio/",
-			"video/",
-			"application/x-msdownload",
-			"application/vnd.ms-",
-			"application/vnd.openxmlformats-",
-		}
-		
-		// Check if the content type matches any binary type
-		for _, binaryType := range binaryTypes {
-			if len(contentType) >= len(binaryType) && contentType[:len(binaryType)] == binaryType {
-				return true
-			}
-		}
-		
-		// Check for compression encoding
-		if contentType == "application/x-deflate" ||
-		   contentType == "application/x-gzip" ||
-		   contentType == "application/x-bzip2" {
-			return true
-		}
-	}
-	
-	// If content type check didn't determine it's binary, check the content itself
-	if len(content) > 0 {
-		// Check for common binary signatures/magic numbers
-		if len(content) >= 4 {
-			// Check for gzip signature
-			if content[0] == 0x1F && content[1] == 0x8B {
-				return true
-			}
-			
-			// Check for zip signature
-			if content[0] == 0x50 && content[1] == 0x4B && content[2] == 0x03 && content[3] == 0x04 {
-				return true
-			}
-			
-			// Check for PDF signature
-			if len(content) >= 5 && content[0] == 0x25 && content[1] == 0x50 && content[2] == 0x44 && content[3] == 0x46 {
-				return true
-			}
-		}
-		
-		// Heuristic: Check if the content contains a high percentage of non-printable characters
-		nonPrintable := 0
-		sampleSize := 100
-		if len(content) < sampleSize {
-			sampleSize = len(content)
-		}
-		
-		for i := 0; i < sampleSize; i++ {
-			c := content[i]
-			if (c < 32 || c > 126) && c != 9 && c != 10 && c != 13 { // Not printable ASCII and not tab, LF, CR
-				nonPrintable++
-			}
-		}
-		
-		// If more than 20% of characters are non-printable, consider it binary
-		if float64(nonPrintable)/float64(sampleSize) > 0.2 {
-			return true
-		}
-	}
-	
-	return false
-}
 
 // headerCopyingTransport is a custom http.RoundTripper that ensures all headers
 // from the server response are properly copied to our response
@@ -459,32 +303,11 @@ func (t *headerCopyingTransport) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 	
-	// Log headers from server for debugging
-	if logger.IsDebugMode {
-		logger.LogDebug("Headers received from server:")
-		for key, values := range resp.Header {
-			for _, value := range values {
-				logger.LogDebug("  %s: %s", key, value)
-			}
-		}
-	}
-	
 	// Copy all headers from the server response to our responseRecorder
-	// Skip CORS headers as they will be set by the corsMiddleware
-	corsHeaders := map[string]bool{
-		"Access-Control-Allow-Origin":      true,
-		"Access-Control-Allow-Methods":     true,
-		"Access-Control-Allow-Headers":     true,
-		"Access-Control-Allow-Credentials": true,
-		"Access-Control-Expose-Headers":    true,
-	}
-	
+	// Skip CORS headers as they will be set by the middleware.CORSMiddleware
 	for key, values := range resp.Header {
 		// Skip CORS headers
-		if corsHeaders[key] {
-			if logger.IsDebugMode {
-				logger.LogDebug("Skipping CORS header %s from proxied response", key)
-			}
+		if middleware.CORSHeaders[key] {
 			continue
 		}
 		

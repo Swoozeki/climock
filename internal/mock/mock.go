@@ -34,7 +34,6 @@ func (m *Manager) FindEndpoint(method, path string) (*config.Endpoint, string, e
 			}
 		}
 	}
-	logger.LogDebug("No matching endpoint found for %s %s", method, path)
 	return nil, "", fmt.Errorf("no matching endpoint found for %s %s", method, path)
 }
 
@@ -188,7 +187,6 @@ func (m *Manager) CreateEndpoint(feature string, endpoint config.Endpoint) error
 		return fmt.Errorf("failed to add endpoint to config: %w", err)
 	}
 
-	logger.LogDebug("Endpoint added to in-memory config, saving to file...")
 	if err := m.Config.SaveFeatureConfig(feature); err != nil {
 		logger.Error("Failed to save feature config: %v", err)
 		return fmt.Errorf("failed to save feature config: %w", err)

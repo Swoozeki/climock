@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mockoho/mockoho/internal/config"
 	"github.com/mockoho/mockoho/internal/logger"
+	"github.com/mockoho/mockoho/internal/middleware"
 	"github.com/mockoho/mockoho/internal/mock"
 	"github.com/mockoho/mockoho/internal/proxy"
 )
@@ -31,47 +32,25 @@ type Server struct {
 
 // New creates a new server
 func New(cfg *config.Config, mockManager *mock.Manager, proxyManager *proxy.Manager) *Server {
-	// Use gin.New() instead of gin.Default() to avoid debug logging
-	router := gin.New()
-	// Add recovery middleware
-	router.Use(gin.Recovery())
-	// Add CORS middleware
-	router.Use(corsMiddleware())
-	
-	return &Server{
+	server := &Server{
 		Config:      cfg,
 		MockManager: mockManager,
 		ProxyManager: proxyManager,
-		router:      router,
 		isRunning:   false,
 	}
+	
+	// Initialize router
+	server.setupRoutes()
+	
+	return server
 }
 
-// corsMiddleware adds CORS headers to all responses
-func corsMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-
-		// Handle preflight OPTIONS requests
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
-}
 
 // Start starts the server
 func (s *Server) Start() error {
 	if s.isRunning {
 		return fmt.Errorf("server is already running")
 	}
-
-	// Set up routes
-	s.setupRoutes()
 
 	// Create HTTP server
 	addr := fmt.Sprintf("%s:%d", s.Config.Global.ServerConfig.Host, s.Config.Global.ServerConfig.Port)
@@ -125,12 +104,12 @@ func (s *Server) GetAddress() string {
 
 // setupRoutes sets up the server routes
 func (s *Server) setupRoutes() {
-	// Clear existing routes
+	// Create a new router
 	s.router = gin.New()
 	// Add recovery middleware
 	s.router.Use(gin.Recovery())
 	// Add CORS middleware
-	s.router.Use(corsMiddleware())
+	s.router.Use(middleware.CORSMiddleware())
 
 	// Add a catch-all route to handle all requests
 	s.router.Any("/*path", s.handleRequest)
@@ -179,24 +158,20 @@ func (s *Server) handleMockResponse(c *gin.Context, endpoint *config.Endpoint, p
 // setResponseHeaders sets the response headers
 func (s *Server) setResponseHeaders(c *gin.Context, headers map[string]string) {
 	// List of CORS headers that should not be overridden
-	corsHeaders := map[string]bool{
-		"Access-Control-Allow-Origin":  true,
-		"Access-Control-Allow-Headers": true,
-		"Access-Control-Allow-Methods": true,
-	}
+	corsHeaders := middleware.CORSHeaders
 
 	for key, value := range headers {
 		// Skip CORS headers that are already set by the middleware
 		if corsHeaders[key] {
-			logger.Info("Skipping CORS header %s as it's already set by middleware", key)
 			continue
 		}
 		c.Header(key, value)
 	}
 }
 
-// handleStringJSONBody handles a string JSON body
-func (s *Server) handleStringJSONBody(c *gin.Context, bodyStr string) bool {
+// writeStringJSONBody attempts to write a string as JSON response
+// Returns true if the string was valid JSON and was written successfully
+func (s *Server) writeStringJSONBody(c *gin.Context, bodyStr string) bool {
 	var jsonBody interface{}
 	if err := json.Unmarshal([]byte(bodyStr), &jsonBody); err == nil {
 		c.Writer.Header().Set("Content-Type", "application/json")
@@ -208,10 +183,6 @@ func (s *Server) handleStringJSONBody(c *gin.Context, bodyStr string) bool {
 	return false
 }
 
-// logRequest logs the HTTP request
-func (s *Server) logRequest(c *gin.Context) {
-	logger.HTTPRequest(c.Request.Method, c.Request.URL.Path, c.ClientIP(), c.Writer.Status(), time.Since(time.Now()))
-}
 
 // sendResponse sends the response to the client
 func (s *Server) sendResponse(c *gin.Context, response *config.Response) {
@@ -223,9 +194,14 @@ func (s *Server) sendResponse(c *gin.Context, response *config.Response) {
 
 	// Handle string JSON bodies
 	if bodyStr, ok := response.Body.(string); ok {
-		if s.handleStringJSONBody(c, bodyStr) {
+		if s.writeStringJSONBody(c, bodyStr) {
 			// Log the request
-			s.logRequest(c)
+			start := time.Now()
+			logger.Info("%s %s - mocked - %d (%s)",
+				c.Request.Method,
+				c.Request.URL.Path,
+				c.Writer.Status(),
+				time.Since(start))
 			return
 		}
 	}
@@ -234,7 +210,12 @@ func (s *Server) sendResponse(c *gin.Context, response *config.Response) {
 	c.JSON(response.Status, response.Body)
 
 	// Log the request
-	s.logRequest(c)
+	start := time.Now()
+	logger.Info("%s %s - mocked - %d (%s)",
+		c.Request.Method,
+		c.Request.URL.Path,
+		c.Writer.Status(),
+		time.Since(start))
 }
 
 // Reload reloads the server configuration

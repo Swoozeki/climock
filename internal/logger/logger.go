@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,41 +21,77 @@ var (
 	
 	// MaxLogSize is the maximum size of the log file in bytes (5MB)
 	MaxLogSize int64 = 5 * 1024 * 1024
+	
+	// BufferSize is the number of log entries to buffer before writing to file
+	BufferSize = 10
 )
 
 // PrependWriter is a custom writer that prepends log entries to a file
 type PrependWriter struct {
-	filePath string
+	filePath  string
+	buffer    [][]byte
+	mu        sync.Mutex
 }
 
 // Write implements the io.Writer interface
 func (w *PrependWriter) Write(p []byte) (n int, err error) {
-	// Read the existing content
-	content, err := os.ReadFile(w.filePath)
-	if err != nil && !os.IsNotExist(err) {
-		return 0, err
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	
+	// Initialize buffer if needed
+	if w.buffer == nil {
+		w.buffer = make([][]byte, 0, BufferSize)
 	}
 	
-	// Create or truncate the file
-	file, err := os.Create(w.filePath)
-	if err != nil {
-		return 0, err
-	}
-	defer file.Close()
+	// Add to buffer
+	w.buffer = append(w.buffer, append([]byte{}, p...))
 	
-	// Write the new log entry
-	if _, err := file.Write(p); err != nil {
-		return 0, err
-	}
-	
-	// If there was existing content, append it
-	if len(content) > 0 {
-		if _, err := file.Write(content); err != nil {
+	// If buffer is full, flush to file
+	if len(w.buffer) >= BufferSize {
+		if err := w.flush(); err != nil {
 			return 0, err
 		}
 	}
 	
 	return len(p), nil
+}
+
+// flush writes the buffered log entries to the file
+func (w *PrependWriter) flush() error {
+	// Read existing content (only if file exists)
+	var existingContent []byte
+	if _, err := os.Stat(w.filePath); err == nil {
+		existingContent, err = os.ReadFile(w.filePath)
+		if err != nil {
+			return err
+		}
+	}
+	
+	// Create or truncate the file
+	file, err := os.Create(w.filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	
+	// Write buffered entries in reverse order (newest first)
+	for i := len(w.buffer) - 1; i >= 0; i-- {
+		if _, err := file.Write(w.buffer[i]); err != nil {
+			return err
+		}
+	}
+	
+	// Write existing content
+	if len(existingContent) > 0 {
+		if _, err := file.Write(existingContent); err != nil {
+			return err
+		}
+	}
+	
+	// Clear buffer
+	w.buffer = w.buffer[:0]
+	
+	return nil
 }
 
 // Colors for console output
@@ -73,26 +110,31 @@ const (
 func Init(debug bool) error {
 	IsDebugMode = debug
 
-	// Create a custom writer that prepends log entries
-	writer := &PrependWriter{filePath: "debug.log"}
-	
-	// Initialize the logger with the custom writer
-	Logger = log.New(writer, "", 0)
-	
-	// Add a clear session separator with timestamp
-	timestamp := time.Now().Format("2006-01-02 15:04:05")
-	divider := strings.Repeat("=", 50)
-	separator := fmt.Sprintf("\n\n%s\n%s\n%s\n\n",
-		divider,
-		fmt.Sprintf("=== NEW SESSION STARTED AT %s ===", timestamp),
-		divider)
-	Logger.Println(separator)
+	if debug {
+		// In debug mode, log to debug.log file
+		writer := &PrependWriter{filePath: "debug.log"}
+		
+		// Initialize the logger with the custom writer
+		Logger = log.New(writer, "", 0)
+		
+		// Add a clear session separator with timestamp
+		timestamp := time.Now().Format("2006-01-02 15:04:05")
+		divider := strings.Repeat("=", 50)
+		separator := fmt.Sprintf("\n\n%s\n%s\n%s\n\n",
+			divider,
+			fmt.Sprintf("=== NEW SESSION STARTED AT %s ===", timestamp),
+			divider)
+		Logger.Println(separator)
 
-	// Log initialization
-	Info("Logger initialized, debug mode: %v", debug)
+		// Log initialization
+		Info("Logger initialized, debug mode: %v", debug)
 
-	// Trim the log file if it's too large
-	go trimLogFile("debug.log", MaxLogSize)
+		// Trim the log file if it's too large
+		go trimLogFile("debug.log", MaxLogSize)
+	} else {
+		// In non-debug mode, don't log to file
+		Logger = log.New(io.Discard, "", 0)
+	}
 
 	return nil
 }
@@ -133,9 +175,18 @@ func trimLogFile(filePath string, maxSize int64) {
 // Close logs a shutdown message
 func Close() {
 	Info("Logger shutting down")
-	// With our new approach, we don't need to close a file
-	// since we're using a custom writer that opens and closes
-	// the file for each write operation
+	
+	// Flush any buffered log entries
+	if Logger != nil {
+		if writer, ok := Logger.Writer().(*PrependWriter); ok && writer != nil {
+			writer.mu.Lock()
+			defer writer.mu.Unlock()
+			
+			if len(writer.buffer) > 0 {
+				_ = writer.flush()
+			}
+		}
+	}
 }
 
 // formatMessage formats a log message with timestamp, level, and caller info
@@ -162,25 +213,26 @@ func formatMessage(level, format string, args ...interface{}) string {
 	return fmt.Sprintf("[%s] %s (%s) %s", timestamp, paddedLevel, caller, message)
 }
 
+// logIfDebug is a helper function that logs a message if debug mode is enabled
+func logIfDebug(level, format string, args ...interface{}) {
+	if IsDebugMode && Logger != nil {
+		Logger.Println(formatMessage(level, format, args...))
+	}
+}
+
 // LogDebug logs a debug message
 func LogDebug(format string, args ...interface{}) {
-	if IsDebugMode && Logger != nil {
-		Logger.Println(formatMessage("DEBUG", format, args...))
-	}
+	logIfDebug("DEBUG", format, args...)
 }
 
 // Info logs an info message
 func Info(format string, args ...interface{}) {
-	if Logger != nil {
-		Logger.Println(formatMessage("INFO", format, args...))
-	}
+	logIfDebug("INFO", format, args...)
 }
 
 // Warn logs a warning message
 func Warn(format string, args ...interface{}) {
-	if Logger != nil {
-		Logger.Println(formatMessage("WARN", format, args...))
-	}
+	logIfDebug("WARN", format, args...)
 }
 
 // Error logs an error message
