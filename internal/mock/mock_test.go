@@ -3,9 +3,9 @@ package mock_test
 import (
 	"testing"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
-	"kohofinancial/mockoho/internal/mock"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
+	"swoozeki/climock/internal/mock"
 )
 
 func init() {

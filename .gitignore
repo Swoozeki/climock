@@ -5,7 +5,7 @@
 *.so
 *.dylib
 main
-mockoho
+climock
 
 # Test binary, built with `go test -c`
 *.test

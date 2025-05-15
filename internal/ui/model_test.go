@@ -3,12 +3,12 @@ package ui_test
 import (
 	"testing"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
-	"kohofinancial/mockoho/internal/mock"
-	"kohofinancial/mockoho/internal/proxy"
-	"kohofinancial/mockoho/internal/server"
-	"kohofinancial/mockoho/internal/ui"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
+	"swoozeki/climock/internal/mock"
+	"swoozeki/climock/internal/proxy"
+	"swoozeki/climock/internal/server"
+	"swoozeki/climock/internal/ui"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

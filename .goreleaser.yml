@@ -12,7 +12,7 @@ builds:
       - arm64
     ldflags:
       - -s -w -X main.Version={{.Version}}
-    main: ./cmd/mockoho/main.go
+    main: ./cmd/climock/main.go
 
 archives:
   - formats: tar.gz
@@ -27,22 +27,22 @@ archives:
 
 release:
   github:
-    owner: kohofinancial
-    name: mockoho
+    owner: swoozeki
+    name: climock
 
 brews:
-  - name: mockoho
-    homepage: "https://github.com/kohofinancial/mockoho"
+  - name: climock
+    homepage: "https://github.com/swoozeki/climock"
     description: "Mock server system for frontend development"
     license: "MIT"
     repository:
-      owner: kohofinancial
+      owner: swoozeki
       name: homebrew-tap
     directory: Formula
     install: |
-      bin.install "mockoho"
+      bin.install "climock"
     test: |
-      system "#{bin}/mockoho --version"
+      system "#{bin}/climock --version"
     dependencies:
       - name: go
         type: optional

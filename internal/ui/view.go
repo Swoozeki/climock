@@ -50,7 +50,7 @@ func (m *Model) renderHeader() string {
 	proxyTarget := m.ProxyManager.GetTargetURL()
 	header := fmt.Sprintf("Server: %s | Proxy: %s", serverStatus, proxyTarget)
 
-	return headerStyle.Render(titleStyle.Render("Mockoho") + " - " + header)
+	return headerStyle.Render(titleStyle.Render("Climock") + " - " + header)
 }
 
 // renderLists renders the feature and endpoint lists
@@ -244,7 +244,7 @@ func (m *Model) renderHelpDialog() string {
 	footer := footerStyle.Render("Press Esc to return")
 
 	// Combine title and content with minimal spacing
-	content := titleStyle.Render("Mockoho Help") + "\n" +
+	content := titleStyle.Render("Climock Help") + "\n" +
 		navSection + "\n" +
 		navKeys + "\n\n" +
 		actionsSection + "\n" +

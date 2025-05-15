@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
 )
 
 func init() {
@@ -32,7 +32,7 @@ func TestNew(t *testing.T) {
 // TestLoadAndSave tests loading and saving configurations
 func TestLoadAndSave(t *testing.T) {
 	// Create a temporary directory for testing
-	tempDir, err := os.MkdirTemp("", "mockoho-config-test")
+	tempDir, err := os.MkdirTemp("", "climock-config-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}

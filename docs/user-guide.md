@@ -1,4 +1,4 @@
-# Mockoho User Guide
+# Climock User Guide
 
 A powerful mock server system for frontend development without a ready backend and for easily updating responses for demo purposes.
 
@@ -17,37 +17,37 @@ A powerful mock server system for frontend development without a ready backend a
 
 **Option 1: Download Binary (Recommended)**
 
-1. Download the latest release from [GitHub Releases](https://github.com/kohofinancial/mockoho/releases)
+1. Download the latest release from [GitHub Releases](https://github.com/swoozeki/climock/releases)
 2. Extract and move the binary to a location in your PATH
 
 **Option 2: Using Go Install**
 
 ```bash
-go install github.com/kohofinancial/mockoho@latest
+go install github.com/swoozeki/climock@latest
 ```
 
 ### Running the Application
 
 ```bash
 # Basic usage
-mockoho
+climock
 
 # With custom config directory
-mockoho --config /path/to/your/mocks
+climock --config /path/to/your/mocks
 
 # Server-only mode (no UI)
-mockoho server --config /path/to/your/mocks
+climock server --config /path/to/your/mocks
 ```
 
 ### Interface Overview
 
-Mockoho has a keyboard-driven interface with two main panels:
+Climock has a keyboard-driven interface with two main panels:
 
 - **Features Panel** (left): Lists all available features (groups of endpoints)
 - **Endpoints Panel** (right): Lists all endpoints for the selected feature
 
 ```
-┌─Mockoho - Server: Stopped | Proxy: https://api.real-server.com─────────────────┐
+┌─Climock - Server: Stopped | Proxy: https://api.real-server.com─────────────────┐
 │                                                                                 │
 ├─Features───────────────────┬─Endpoints (users)──────────────────────────────────┤
 │                            │                                                    │

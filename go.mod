@@ -1,4 +1,4 @@
-module kohofinancial/mockoho
+module swoozeki/climock
 
 go 1.23.0
 

@@ -8,8 +8,8 @@ import (
 	"text/template"
 	"time"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
 )
 
 // Manager handles mock endpoints and response generation

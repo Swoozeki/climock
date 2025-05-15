@@ -1,6 +1,6 @@
-# Mockoho Developer Guide
+# Climock Developer Guide
 
-This guide provides technical information for developers who want to understand or contribute to the Mockoho codebase.
+This guide provides technical information for developers who want to understand or contribute to the Climock codebase.
 
 ## Table of Contents
 
@@ -13,12 +13,12 @@ This guide provides technical information for developers who want to understand 
 
 ## Project Structure
 
-Mockoho is organized into the following main directories:
+Climock is organized into the following main directories:
 
 ```
-mockoho/
+climock/
   ├── cmd/                  # Command-line entry points
-  │   └── mockoho/          # Main application
+  │   └── climock/          # Main application
   ├── docs/                 # Documentation
   ├── examples/             # Example code and configurations
   ├── internal/             # Internal packages
@@ -33,7 +33,7 @@ mockoho/
 
 ## TUI Architecture
 
-Mockoho's TUI is built using the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework, a Go library for building terminal applications using The Elm Architecture (TEA). The UI is styled using [Lip Gloss](https://github.com/charmbracelet/lipgloss), which provides tools for styling terminal applications.
+Climock's TUI is built using the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework, a Go library for building terminal applications using The Elm Architecture (TEA). The UI is styled using [Lip Gloss](https://github.com/charmbracelet/lipgloss), which provides tools for styling terminal applications.
 
 ### Core Components
 
@@ -190,7 +190,7 @@ The Endpoints Panel displays a list of endpoints for the selected feature:
 
 ### Dialog System
 
-Mockoho uses a modal dialog system for user input and confirmation:
+Climock uses a modal dialog system for user input and confirmation:
 
 #### Dialog Types
 
@@ -215,7 +215,7 @@ const (
 
 ### Keyboard Navigation
 
-Mockoho uses a keyboard-driven interface with the following key bindings:
+Climock uses a keyboard-driven interface with the following key bindings:
 
 ```go
 func DefaultKeyMap() KeyMap {
@@ -239,7 +239,7 @@ func DefaultKeyMap() KeyMap {
 
 ### List Components
 
-Mockoho uses Bubble Tea's list component for both the Features and Endpoints panels:
+Climock uses Bubble Tea's list component for both the Features and Endpoints panels:
 
 #### Feature Item
 
@@ -264,7 +264,7 @@ type endpointItem struct {
 
 ### Styling
 
-Mockoho uses Lip Gloss for styling terminal UI components:
+Climock uses Lip Gloss for styling terminal UI components:
 
 ```go
 func (m *Model) renderHeader() string {
@@ -281,7 +281,7 @@ func (m *Model) renderHeader() string {
     proxyTarget := m.ProxyManager.GetTargetURL()
     header := fmt.Sprintf("Server: %s | Proxy: %s", serverStatus, proxyTarget)
 
-    return headerStyle.Render("Mockoho - " + header)
+    return headerStyle.Render("Climock - " + header)
 }
 ```
 

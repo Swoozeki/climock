@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
-	"kohofinancial/mockoho/internal/mock"
-	"kohofinancial/mockoho/internal/proxy"
-	"kohofinancial/mockoho/internal/server"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
+	"swoozeki/climock/internal/mock"
+	"swoozeki/climock/internal/proxy"
+	"swoozeki/climock/internal/server"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -513,7 +513,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Help):
 			m.activeDialog = HelpDialog
 			// Initialize dialog content
-			m.dialogTitle = "Mockoho Help"
+			m.dialogTitle = "Climock Help"
 			m.dialogContent = ""
 			return m, nil
 		case key.Matches(msg, m.keyMap.New):

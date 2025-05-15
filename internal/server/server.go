@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
-	"kohofinancial/mockoho/internal/middleware"
-	"kohofinancial/mockoho/internal/mock"
-	"kohofinancial/mockoho/internal/proxy"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
+	"swoozeki/climock/internal/middleware"
+	"swoozeki/climock/internal/mock"
+	"swoozeki/climock/internal/proxy"
 
 	"github.com/gin-gonic/gin"
 )

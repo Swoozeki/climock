@@ -1,6 +1,6 @@
-# Mockoho: Mock Server System
+# Climock: Mock Server System
 
-Mockoho is a mock server for development. It'll act as proxy to the real server where mock endpoints are not defined. The primary interface is the interactive CLI, where you can add new features and mock endpoints, and easily toggle any of them for quick and easy mocking.
+Climock is a mock server for development. It'll act as proxy to the real server where mock endpoints are not defined. The primary interface is the interactive CLI, where you can add new features and mock endpoints, and easily toggle any of them for quick and easy mocking.
 
 ## Features
 
@@ -16,46 +16,46 @@ Mockoho is a mock server for development. It'll act as proxy to the real server 
 
 ```bash
 # Add our private tap (you'll be prompted for your GitHub credentials)
-brew tap kohofinancial/tap https://github.com/kohofinancial/homebrew-tap.git
+brew tap swoozeki/tap https://github.com/swoozeki/homebrew-tap.git
 
-# Install mockoho
-brew install mockoho
+# Install climock
+brew install climock
 ```
 
 ### Option 2: Building from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/kohofinancial/mockoho.git
-cd mockoho
+git clone https://github.com/swoozeki/climock.git
+cd climock
 
 # Build the application
-go build -o mockoho ./cmd/mockoho
+go build -o climock ./cmd/climock
 ```
 
 ## Usage
 
-After installation, you can start Mockoho with:
+After installation, you can start Climock with:
 
 ```bash
 # Run with default configuration
-mockoho
+climock
 
 # Specify a custom configuration directory
-mockoho --config /path/to/your/mocks
+climock --config /path/to/your/mocks
 
 # Run in server-only mode (without TUI)
-mockoho server --config /path/to/your/mocks
+climock server --config /path/to/your/mocks
 ```
 
 The Terminal User Interface (TUI) will launch, allowing you to manage mock configurations using keyboard shortcuts. Your mock API will be available at `http://localhost:3000/api/...`
 
 ## Quick Start
 
-1. Run the Mockoho CLI tool:
+1. Run the Climock CLI tool:
 
 ```bash
-mockoho
+climock
 ```
 
 2. Use the keyboard shortcuts to navigate and manage mock configurations:
@@ -72,7 +72,7 @@ mockoho
 
 ## Configuration
 
-Mockoho uses JSON files for configuration, organized by feature name:
+Climock uses JSON files for configuration, organized by feature name:
 
 ```
 mocks/
@@ -162,7 +162,7 @@ mocks/
 
 ## Template Variables
 
-Mockoho supports template variables in response bodies:
+Climock supports template variables in response bodies:
 
 - `{{params.id}}` - Path parameter value (e.g., `:id` in `/api/users/:id`)
 - `{{now}}` - Current timestamp in ISO 8601 format
@@ -171,8 +171,8 @@ Mockoho supports template variables in response bodies:
 
 ```
 Usage:
-  mockoho [flags]
-  mockoho [command]
+  climock [flags]
+  climock [command]
 
 Available Commands:
   help        Help about any command
@@ -180,7 +180,7 @@ Available Commands:
 
 Flags:
   -c, --config string   Directory containing mock configurations (default "mocks")
-  -h, --help            help for mockoho
+  -h, --help            help for climock
 ```
 
 ## License

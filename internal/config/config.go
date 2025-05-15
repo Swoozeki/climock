@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"kohofinancial/mockoho/internal/logger"
+	"swoozeki/climock/internal/logger"
 )
 
 // ProxyConfig holds the proxy server configuration

@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
-	"kohofinancial/mockoho/internal/mock"
-	"kohofinancial/mockoho/internal/proxy"
-	"kohofinancial/mockoho/internal/server"
-	"kohofinancial/mockoho/internal/ui"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
+	"swoozeki/climock/internal/mock"
+	"swoozeki/climock/internal/proxy"
+	"swoozeki/climock/internal/server"
+	"swoozeki/climock/internal/ui"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -33,8 +33,8 @@ var (
 func main() {
 	// Create root command
 	rootCmd := &cobra.Command{
-		Use:     "mockoho",
-		Short:   "Mockoho - A mock server system",
+		Use:     "climock",
+		Short:   "Climock - A mock server system",
 		Version: Version,
 		Run:     runUI,
 	}
@@ -99,7 +99,7 @@ func runUI(cmd *cobra.Command, args []string) {
 	}
 	defer logger.Close()
 	
-	logger.Info("Starting Mockoho UI")
+	logger.Info("Starting Climock UI")
 	
 	// Create UI model
 	model := ui.New(cfg, mockManager, proxyManager, srv)
@@ -141,7 +141,7 @@ func runServer(cmd *cobra.Command, args []string) {
 	}
 	defer logger.Close()
 	
-	logger.Info("Starting Mockoho server")
+	logger.Info("Starting Climock server")
 	
 	// Start server
 	if err := srv.Start(); err != nil {

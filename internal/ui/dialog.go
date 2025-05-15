@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"

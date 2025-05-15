@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"time"
 
-	"kohofinancial/mockoho/internal/config"
-	"kohofinancial/mockoho/internal/logger"
-	"kohofinancial/mockoho/internal/middleware"
+	"swoozeki/climock/internal/config"
+	"swoozeki/climock/internal/logger"
+	"swoozeki/climock/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
