@@ -1,3 +1,5 @@
+version: 2
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -13,7 +15,7 @@ builds:
     main: ./cmd/mockoho/main.go
 
 archives:
-  - format: tar.gz
+  - formats: tar.gz
     name_template: >-
       {{ .ProjectName }}_
       {{- .Version }}_
@@ -21,9 +23,26 @@ archives:
       {{- .Arch }}
     format_overrides:
       - goos: windows
-        format: zip
+        formats: zip
 
 release:
   github:
-    owner: mockoho
+    owner: kohofinancial
     name: mockoho
+
+brews:
+  - name: mockoho
+    homepage: "https://github.com/kohofinancial/mockoho"
+    description: "Mock server system for frontend development"
+    license: "MIT"
+    repository:
+      owner: kohofinancial
+      name: homebrew-tap
+    directory: Formula
+    install: |
+      bin.install "mockoho"
+    test: |
+      system "#{bin}/mockoho --version"
+    dependencies:
+      - name: go
+        type: optional

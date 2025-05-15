@@ -1,0 +1,41 @@
+name: Fix Go Version Sync
+on:
+  pull_request:
+    paths:
+      - "go.mod"
+
+jobs:
+  sync-versions:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Sync Go versions
+        run: |
+          GO_VERSION=$(grep -E '^go [0-9]+\.[0-9]+\.[0-9]+' go.mod | awk '{print $2}')
+          if [ -f .tool-versions ]; then
+            # Update existing .tool-versions file
+            if grep -q "^golang " .tool-versions; then
+              sed -i "s/^golang .*$/golang $GO_VERSION/" .tool-versions
+            else
+              # Add golang version if not present
+              echo "golang $GO_VERSION" >> .tool-versions
+            fi
+          else
+            # Create .tool-versions file if it doesn't exist
+            echo "golang $GO_VERSION" > .tool-versions
+          fi
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .tool-versions
+          git commit -m "Sync Go version in .tool-versions" || echo "No changes to commit"
+          git push

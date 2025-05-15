@@ -1,6 +1,6 @@
 # Mockoho: Mock Server System
 
-Mockoho is a powerful mock server system designed to facilitate frontend development without a ready backend and to easily update responses for demo purposes.
+Mockoho is a mock server for development. It'll act as proxy to the real server where mock endpoints are not defined. The primary interface is the interactive CLI, where you can add new features and mock endpoints, and easily toggle any of them for quick and easy mocking.
 
 ## Features
 
@@ -12,19 +12,17 @@ Mockoho is a powerful mock server system designed to facilitate frontend develop
 
 ## Installation
 
-### Option 1: Download Binary (Recommended)
-
-1. Download the latest release for your platform from [GitHub Releases](https://github.com/kohofinancial/mockoho/releases)
-2. Extract the archive
-3. Move the binary to a location in your PATH (optional)
-
-### Option 2: Using Go Install (Requires Go)
+### Option 1: Using Homebrew (Recommended)
 
 ```bash
-go install github.com/kohofinancial/mockoho@latest
+# Add our private tap (you'll be prompted for your GitHub credentials)
+brew tap kohofinancial/tap https://github.com/kohofinancial/homebrew-tap.git
+
+# Install mockoho
+brew install mockoho
 ```
 
-### Option 3: Building from Source
+### Option 2: Building from Source
 
 ```bash
 # Clone the repository
@@ -37,23 +35,20 @@ go build -o mockoho ./cmd/mockoho
 
 ## Usage
 
-Run Mockoho with default configuration:
+After installation, you can start Mockoho with:
 
 ```bash
+# Run with default configuration
 mockoho
-```
 
-Specify a custom configuration directory:
-
-```bash
+# Specify a custom configuration directory
 mockoho --config /path/to/your/mocks
-```
 
-Run in server-only mode (without TUI):
-
-```bash
+# Run in server-only mode (without TUI)
 mockoho server --config /path/to/your/mocks
 ```
+
+The Terminal User Interface (TUI) will launch, allowing you to manage mock configurations using keyboard shortcuts. Your mock API will be available at `http://localhost:3000/api/...`
 
 ## Quick Start
 
@@ -65,8 +60,9 @@ mockoho
 
 2. Use the keyboard shortcuts to navigate and manage mock configurations:
 
-   - `Tab` to switch between Features and Endpoints panels
+   - `←/→` to switch between Features and Endpoints panels
    - `↑/↓` to navigate up/down in the current panel
+   - `n` to add new feature or endpoint
    - `t` to toggle endpoint active/inactive
    - `r` to cycle through available responses
    - `s` to start/stop the server
@@ -186,25 +182,6 @@ Flags:
   -c, --config string   Directory containing mock configurations (default "mocks")
   -h, --help            help for mockoho
 ```
-
-## Keyboard Shortcuts
-
-| Key    | Action        | Description                                        |
-| ------ | ------------- | -------------------------------------------------- |
-| Tab    | Switch Panel  | Switch between Features and Endpoints panels       |
-| ↑/↓    | Navigate List | Move up/down in the current panel                  |
-| Enter  | Select Item   | Select a feature or endpoint                       |
-| t      | Toggle        | Toggle endpoint active/inactive                    |
-| r      | Response      | Cycle through available responses for the endpoint |
-| o      | Open          | Open configuration file in default editor          |
-| n      | New           | Create new endpoint or feature                     |
-| d      | Delete        | Delete selected endpoint or feature                |
-| p      | Proxy         | Change proxy target                                |
-| s      | Server        | Start/stop server                                  |
-| q      | Quit          | Exit the application                               |
-| h      | Help          | Show help screen with all shortcuts                |
-| /      | Search        | Search for endpoints                               |
-| Ctrl+r | Reload        | Reload configurations from disk                    |
 
 ## License
 
