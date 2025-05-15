@@ -38,6 +38,7 @@ brews:
     repository:
       owner: swoozeki
       name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
     directory: Formula
     install: |
       bin.install "climock"
